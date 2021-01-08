@@ -92,3 +92,6 @@ import module_name as mn
 from module_name import *
 
 # Nota: al principio de cada módulo (la/s primera/s línea/s) deberiamos tener un 'docstring' que diga brevemente qué contiene el modulo (de qué se trata).
+# Nota2: todos los modulos importados de la libreria estandar de Python, deben estar declarados primero, y luego se deja una linea en
+#        blanco y se hacen los 'import' de nuestros propios módulos (en el bloc de notas 'extras/apuntes' mencioné 2 funciones que decia el libro
+#        sobre la libreria estandar de Python, importando el módulo 'random').
