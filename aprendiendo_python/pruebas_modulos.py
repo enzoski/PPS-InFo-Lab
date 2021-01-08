@@ -90,3 +90,5 @@ from module_name import function_name
 from module_name import function_name as fn
 import module_name as mn
 from module_name import *
+
+# Nota: al principio de cada módulo (la/s primera/s línea/s) deberiamos tener un 'docstring' que diga brevemente qué contiene el modulo (de qué se trata).
