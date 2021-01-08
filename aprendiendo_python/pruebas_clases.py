@@ -188,7 +188,7 @@ from module_name import ClassName as CN       # importamos una clase específica
 import module_name as mn                      # importamos un módulo completo, y le damos un alias.
 from module_name import *                     # importamos unicamente la totalidad de las clases de un módulo.
 
-#"When you’re starting out, keep your code structure simple. Try doing everything in one file and moving your classes to separate modules
+# "When you’re starting out, keep your code structure simple. Try doing everything in one file and moving your classes to separate modules
 # once everything is working. If you like how modules and files interact, try storing your classes in modules when you start a project.
 # Find an approach that lets you write code that works, and go from there."
 
