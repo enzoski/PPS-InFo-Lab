@@ -23,7 +23,7 @@ class Dog:
 # -Toda la estructura de la clase queda marcada por la indentación.
 # -Como los tipos en Python son dinamicos (y por ende no hay declaraciones de variables), no veremos como se estructura el estado
 #  de la clase, es decir, no veremos al principio los atributos de clase (salvo cuando haya que asignares un valor inicial).
-#  ->en realidad no lo veremos porque es un error sintactico, ya que entre la definiciion de la clase y el primer método, no hay ninguna
+#  ->en realidad no lo veremos porque es un error sintactico, ya que entre la definicion de la clase y el primer método, no hay ninguna
 #    referencia a 'self', y es la unica manera de saber que estamos hablando de una clase/objeto.
 #    No es como Java que mantiene esa info en el .class (creo) y siempre podemos usar el .this, en todo momento.
 # -Los métodos de la clase se estructuran como las funciones.
@@ -32,7 +32,8 @@ class Dog:
 # -La palabra reservada 'self' es como una variable que contiene la referencia del objeto resultante de la instanciacion de la clase.
 # -'self' siempre debe ir como primer parámetro del constructor (y de los métodos), ya que Python lo usa y necesita para mantener la
 #  referencia del objeto particular y poder acceder a sus atributos y métodos. De todas formas, cuando creamos el objeto
-#  (o cuando llamamos métodos) el 'self' se pasa automaticamente por argumento, no lo tenemos que poner nosotros al llamar al constructor
+#  (o cuando llamamos métodos) el 'self' se pasa automaticamente por argumento, no lo tenemos que poner nosotros al llamar al constructor.
+#  O sea, en la definicion de métodos, se pone como primer parámetro 'self'. Pero al llamar a esos métodos, No se pasa ese 'self' por argumento.
 # -toda variable "self.variable" será un atributo de clase.
 
 # --------------------------------------------------------
