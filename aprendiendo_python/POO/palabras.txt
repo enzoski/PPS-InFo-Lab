@@ -1,0 +1,3 @@
+hola como estas
+¿todo bien?
+(archivo usado dentro de 'pruebas_excepciones.py', en el contador de palabras de archivos)
