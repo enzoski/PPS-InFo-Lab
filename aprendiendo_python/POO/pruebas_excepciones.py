@@ -69,3 +69,7 @@ for filename in filenames:
 # siguiendo con la ejecución del programa. Sirve mas que nada como una justificación de que vos realmente decidiste no hacer nada en
 # cierto bloque de código (ya que sería lo mismo que dejarlo en blanco). O también puede servir como un recordatorio para implementar
 # algo luego.
+#------------------------------
+
+# Nota: en el capítulo no se habló sobre poner más de un bloque except/catch, ni de poder crear nuestras propias excepciones (haciendo clases);
+#       pero seguramente que ambas cosas se podrían hacer acá en Python.
