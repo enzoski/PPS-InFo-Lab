@@ -39,7 +39,7 @@ if __name__ == '__main__': # *
 
 # Para hacer un caso de prueba debemos importar 'unittest' y la funcion o clase que queramos testear.
 # Luego debemos hacer una clase Test que herede de 'unittest.TestCase', con esto, entre otras cosas, tendremos acceso a los 'assert', que
-# son el mismo concepto que vimos en Java (comprobar que un componenete/función haga lo que debería hacer; y si algo falla, se lanzará una excepcion
+# son el mismo concepto que vimos en Java (comprobar que un componente/función haga lo que debería hacer; y si algo falla, se lanzará una excepcion
 # del assert; de todas formas se ejecutará la totalidad de los métodos de prueba y luego se verá cuales fallaron y cuales no).
 # Cada método de prueba (que representa una prueba unitaria) debe comenzar con el nombre 'test_', para que Python lo ejecute automaticamente
 # cuando ejecutemos este archivo ('pruebas_testing.py').
