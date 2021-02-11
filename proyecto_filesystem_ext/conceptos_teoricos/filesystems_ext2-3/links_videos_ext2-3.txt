@@ -1,0 +1,15 @@
+Ext2/3 en general:
+https://www.youtube.com/watch?v=g7OkSvioFlU
+https://www.youtube.com/watch?v=izsYILDYW-A
+https://www.youtube.com/watch?v=6oMNk-DYyho (el ejemplo del final está bueno, lo unico es que algunas nomenclaturas o formas de estructurar no es taaal cual como realmente es)
+
+Estructura de los inodos:
+https://www.youtube.com/watch?v=tMVj22EWg6A
+
+Ejemplos en consola sobre inodos y ext en general:
+https://www.youtube.com/watch?v=_6VJ8WfWI4k
+https://www.youtube.com/watch?v=6KjMlm8hhFA
+https://www.youtube.com/watch?v=Ghq6tZiC9YU
+
+Filesystems en general:
+https://www.youtube.com/watch?v=_h30HBYxtws

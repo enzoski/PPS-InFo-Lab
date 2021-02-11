@@ -1,0 +1,1 @@
+Además, leí un capítulo del libro "Understanding the Linux Kernel", donde explica en detalle todas las estructuras del filesystem ext2 y ext3 (el cual me basaré para desarrollar el parser).
