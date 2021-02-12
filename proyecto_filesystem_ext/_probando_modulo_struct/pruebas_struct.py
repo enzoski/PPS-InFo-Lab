@@ -31,16 +31,18 @@ with open(filename, "rb") as f:
 
 print(raw_data_4)
 print(raw_data_4[0]) #por eso aca nos muestra el ascii del '9'
+#(realmente como el archivo es de texto, al escribir el 9 lo codifica como ascii (char), no como un número como tal; veremos el binario del 57)
+#(para leer realmente el 9 binario, tendriamos que escribir en el archivo lo siguiente: f.write(struct.pack("<B", 9) )
 
 #lo mismo si 'desempaquetamos' los bytes uno a uno. (serian los bytes 00111001 y 00110111) [importante respetar los 8 bits]
 print(struct.unpack("<BB", raw_data_4))
 #pero si desempaquetamos los 2 bytes como si fueran una unidad, obviamente cambia el binario. (ahora sería 0011011100111001)
 print(struct.unpack("<H", raw_data_4))
-#y si cambiamos el little-endian (<) por el big-endian (>), tambien cambia el binario (sería leer de izq a der 0011100100110111)
+#y si cambiamos el little-endian (<) por el big-endian (>), tambien cambia el binario (sería leer de izq a der: 0011100100110111)
 print(struct.unpack(">H", raw_data_4))
 
 #el unpack por defecto devuelve la representacion decimal de los binarios dentro de una tupla
-#pero si hacemos una asignacion de multiple variables, las asigna una por una.
+#pero si hacemos una asignacion de multiple variables, las asigna una por una directamente con los numeros decimales.
 
 decimal_1, decimal_2 = struct.unpack("<BB", raw_data_4)
 
