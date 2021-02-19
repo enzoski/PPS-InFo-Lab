@@ -1,7 +1,7 @@
 # Cosas a revisar:
 #  - en 'file_types' no se bien que numeracion poner, porque segun
 #    https://www.nongnu.org/ext2-doc/ext2.html#i-mode y https://wiki.osdev.org/Ext2#Inode_Type_and_Permissions, es otra.
-#  - en 'i_mode' faltaria parsear los ultimos 3 bits (y no se bien si hacer el parseo en el setter o en el getter)
+#  - no se bien si hacer ciertos parseos en el setter o en el getter (como el caso de 'i_mode' o 'i_flags')
 #  - fijarme lo de las funciones de inodos (definidas al final de la clase)
 
 import datetime
@@ -65,7 +65,7 @@ class Inode:
         self._i_mode        = -1
         self._i_uid         = b'' #por si lo represento como string
         self._i_size        = -1 # Effective length of the file in bytes
-        self._i_atime       = None
+        self._i_atime       = None #representaré los timestamps con objetos DateTime
         self._i_ctime       = None
         self._i_mtime       = None
         self._i_dtime       = None
@@ -85,6 +85,10 @@ class Inode:
 
     @property
     def raw_data(self):
+        """
+        Bytes to be parsed (are the 128 bytes corresponding to the structure
+        of an inode)
+        """
         return self._raw_data
 
     @raw_data.setter
@@ -99,23 +103,31 @@ class Inode:
         File type and access rights (16 bits)
         The top 4 bits for the type, and the bottom 12 bits for the access rights.
 
-        :return: a formatted-string (me basé en como realmente se muestra en Linux)
+        Returns a formatted-string (me basé en como realmente se muestra en Linux)
         """
         f_type   = self._i_mode >> 12
+        permissions = f"{file_types[f_type]}"
+
         f_rights = self._i_mode & 0x0fff
 
+        # process control bits (I don't really concatenate them in the final string for now)
+        set_process_user_id =  ((f_rights & 0b100000000000) >> 11) == 1
+        set_process_group_id = ((f_rights & 0b010000000000) >> 10) == 1
+        sticky_bit =           ((f_rights & 0b001000000000) >> 9) == 1
+
+        # access rights bits
         owner_rights = (f_rights & 0b000111000000) >> 6
         group_rights = (f_rights & 0b000000111000) >> 3
         other_rights = (f_rights & 0b000000000111)
 
         rights = [owner_rights, group_rights, other_rights]
-        
-        permissions = f"{file_types[f_type]}"
 
         for r in rights:
             permissions += access_rights[r & 0b100] # cada bit tiene un significado
             permissions += access_rights[r & 0b010]
             permissions += access_rights[r & 0b001]
+
+        # permissions += f"{set_process_user_id} {set_process_group_id} {sticky_bit}"
 
         return permissions
 
@@ -125,6 +137,9 @@ class Inode:
 
     @property
     def i_uid(self):
+        """
+        Owner identifier
+        """
         return self._i_uid
 
     @i_uid.setter
@@ -133,6 +148,9 @@ class Inode:
 
     @property
     def i_size(self):
+        """
+        Effective length of the file in bytes
+        """
         return self._i_size
 
     @i_size.setter
@@ -141,7 +159,7 @@ class Inode:
 
     # ---------------------------------------------------------
 
-    # All ext2 'timestamps' are based on 'POSIX time' (https://en.wikipedia.org/wiki/Unix_time),
+    # All 'timestamps' of files in ext2 are based on 'POSIX time' (https://en.wikipedia.org/wiki/Unix_time),
     # that is, the number of seconds that have elapsed since the Unix epoch
     # (january 1st 1970, 00:00:00 UTC). All the fields that store dates in ext2,
     # have 4 bytes (unsigned), therefore 2^32 seconds can be stored (it will be enough until the year 2106)
@@ -151,6 +169,9 @@ class Inode:
 
     @property
     def i_atime(self):
+        """
+        Last access timestamp
+        """
         return self._i_atime
 
     @i_atime.setter
@@ -159,6 +180,9 @@ class Inode:
 
     @property
     def i_ctime(self):
+        """
+        Creation timestamp
+        """
         return self._i_ctime
 
     @i_ctime.setter
@@ -167,6 +191,9 @@ class Inode:
 
     @property
     def i_mtime(self):
+        """
+        Last modification timestamp
+        """
         return self._i_mtime
 
     @i_mtime.setter
@@ -175,6 +202,9 @@ class Inode:
 
     @property
     def i_dtime(self):
+        """
+        Deletion timestamp        
+        """
         return self._i_dtime
 
     @i_dtime.setter
@@ -185,6 +215,9 @@ class Inode:
 
     @property
     def i_gid(self):
+        """
+        Group identifier
+        """
         return self._i_gid
 
     @i_gid.setter
@@ -193,23 +226,31 @@ class Inode:
 
     @property
     def i_links_count(self):
+        """
+        Hard links counter
+        """
         return self._i_links_count
 
     @i_links_count.setter
     def i_links_count(self, value):
         self._i_links_count = value
 
-    @property # Number of data blocks (in units of 512 bytes) of the file (Count of disk sectors)
+    @property
     def i_blocks(self):
+        """
+        Number of data blocks (in units of 512 bytes) of the file (count of disk sectors).
+        """
         return self._i_blocks
 
-    @i_blocks.setter # Number of data blocks (in units of 512 bytes) of the file (Count of disk sectors)
+    @i_blocks.setter
     def i_blocks(self, value):
         self._i_blocks = value
 
-    # Returns a formated-string with the flags of the file
     @property
     def i_flags(self):
+        """
+        Returns a formated-string with the flags of the file
+        """
         flag_list = []
         for b in range(0, N_FLAGS):         # parseo (por ahora) solo 'n' bits de los 32 que tiene "_i_flags".
             k = self._i_flags & (0b1 << b)  # voy aplicando mascaras del tipo 1, 10, 100, 1000 ... (bits).
@@ -220,8 +261,83 @@ class Inode:
     @i_flags.setter
     def i_flags(self, value):
         self._i_flags = value
-    
-    # faltarian los demas getters y setters
+
+    @property
+    def osd1(self):
+        """
+        Specific operating system information (4 bytes)
+        """
+        return self._osd1
+
+    @osd1.setter
+    def osd1(self, value):
+        self._osd1 = value
+
+    @property
+    def i_block(self):
+        """
+        Pointers to data blocks (12 direct and 3 indirect)
+        """
+        return self._i_block
+
+    @i_block.setter
+    def i_block(self, value):
+        self._i_block = value
+
+    @property
+    def i_generation(self):
+        """
+        File version (used when the file is accessed by a network filesystem)
+        """
+        return self._i_generation
+
+    @i_generation.setter
+    def i_generation(self, value):
+        self._i_generation = value
+
+    @property
+    def i_file_acl(self):
+        """
+        File access control list
+        """
+        return self._i_file_acl
+
+    @i_file_acl.setter
+    def i_file_acl(self, value):
+        self._i_file_acl = value
+
+    @property
+    def i_dir_acl(self):
+        """
+        Directory access control list (is not used for regular files)
+        """
+        return self._i_dir_acl
+
+    @i_dir_acl.setter
+    def i_dir_acl(self, value):
+        self._i_dir_acl = value
+
+    @property
+    def i_faddr(self):
+        """
+        Fragment address
+        """
+        return self._i_faddr
+
+    @i_faddr.setter
+    def i_faddr(self, value):
+        self._i_faddr = value
+
+    @property
+    def osd2(self):
+        """
+        Specific operating system information (12 bytes)
+        """
+        return self._osd2
+
+    @osd2.setter
+    def osd2(self, value):
+        self._osd2 = value
 
     def __str__(self):
         return (
@@ -236,7 +352,7 @@ class Inode:
                 f"Hard links counter:                           {self.i_links_count}\n"
                 f"Number of data blocks of the file:            {self.i_blocks} (in units of 512 bytes)\n"
                 f"File flags:                                   {self.i_flags}\n"
-                # faltarian los demás
+                # faltarian los demás (si es que decido querer mostrarlos)
             )
 
     def _parse(self):
@@ -251,6 +367,14 @@ class Inode:
         self.i_links_count = struct.unpack("<H", self._raw_data[26:28])[0]
         self.i_blocks      = struct.unpack("<I", self._raw_data[28:32])[0]
         self.i_flags       = struct.unpack("<I", self._raw_data[32:36])[0]
+        self.osd1          = struct.unpack("<I", self._raw_data[36:40])[0]
+        self.i_block       = list(struct.unpack("<IIIIIIIIIIIIIII", self._raw_data[40:100]))
+        self.i_generation  = struct.unpack("<I", self._raw_data[100:104])[0]
+        self.i_file_acl    = struct.unpack("<I", self._raw_data[104:108])[0]
+        self.i_dir_acl     = struct.unpack("<I", self._raw_data[108:112])[0]
+        self.i_faddr       = struct.unpack("<I", self._raw_data[112:116])[0]
+        self.osd2          = struct.unpack("<III", self._raw_data[116:128])
+
 
     # Ext2 Inode Operations
 
@@ -313,6 +437,13 @@ with open(filename, "wb") as f:
     f.write(struct.pack("<H", 10))
     f.write(struct.pack("<I", 700))
     f.write(struct.pack("<I", 416)) # 00 0001 1010 0000 ("append only", "do not update .i_atime" y "dirty")
+    f.write(struct.pack("<I", 0))
+    f.write(struct.pack("<IIIIIIIIIIIIIII", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    f.write(struct.pack("<I", 0))
+    f.write(struct.pack("<I", 0))
+    f.write(struct.pack("<I", 0))
+    f.write(struct.pack("<I", 0))
+    f.write(struct.pack("<III", 0, 0, 0))
 
 with open(filename, "rb") as f:
     inode_data = f.read()
@@ -320,6 +451,8 @@ with open(filename, "rb") as f:
 ind = Inode(inode_data)
 print(ind)
 
+#ind.i_mode = 0b0010111111101100
+#print(ind.i_mode)
 
-    
-    
+print(ind.i_block)
+print(type(ind.i_block))
