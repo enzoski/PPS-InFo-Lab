@@ -1,5 +1,4 @@
 # Creo que ya estaria completa esta clase
-# (igual faltaria ver lo de los parseos en los getters o setters, como en las demás clases)
 
 import struct
 
@@ -14,6 +13,9 @@ file_types = {
     6: "Socket",
     7: "Symbolic link"
 }
+
+# Filename encoding
+ENCODING = 'utf-8' # generally UTF-8 is used
 
 class DirectoryEntry:
     """
@@ -30,6 +32,7 @@ class DirectoryEntry:
                  inode=None, rec_len=None, name_len=None, file_type=None, name=None
                  ):
 
+        # let's parse
         p_inode     = struct.unpack("<I", data[0:4])[0]
         p_rec_len   = struct.unpack("<H", data[4:6])[0]
         p_name_len  = struct.unpack("<B", data[6:7])[0]
@@ -39,7 +42,7 @@ class DirectoryEntry:
         # note: by default, the 'slice' will return b'' (empty bytestring) and not IndexError
 
         self._raw_data = data
-
+        # and now we set, either the parameterized values or the parsed ones
         self.inode     = inode     or p_inode
         self.rec_len   = rec_len   or p_rec_len
         self.name_len  = name_len  or p_name_len
@@ -69,8 +72,8 @@ class DirectoryEntry:
 
     @inode.setter
     def inode(self, value):
-        # así evitamos que nos manden tipos de datos que no tengan una representacion numérica.
-        # o sea, en esos casos, se lanzará una excepción.
+        # This way we prevent someone from sending us data types that do not have
+        # a numerical representation. That is, in those cases, an exception will be thrown.
         self._inode = int(value)
 
     @property
@@ -104,7 +107,13 @@ class DirectoryEntry:
 
     @file_type.setter
     def file_type(self, value):
-        self._file_type = int(value)
+        value = int(value)
+        # to avoid a KeyError
+        if value < 0:
+            value = 0
+        elif value > 7:
+            value = 7
+        self._file_type = value
 
     @property
     def name(self):
@@ -115,6 +124,9 @@ class DirectoryEntry:
 
     @name.setter
     def name(self, value):
+        # I admit both strings and bytestrings, but internally I keep bytestrings.
+        if isinstance(value, str):
+            value = bytes(value, ENCODING)
         self._name = value
 
     # ---
@@ -125,7 +137,7 @@ class DirectoryEntry:
                 f"Directory entry length: {self.rec_len}\n"
                 f"Filename length:        {self.name_len}\n"
                 f"File type:              {self.file_type}\n"
-                f"Filename:               {self.name.decode('latin1')}\n" # uso esta codificacion u otra???
+                f"Filename:               {self.name.decode(ENCODING)}\n"
             )
 
 
@@ -147,10 +159,11 @@ de = DirectoryEntry(dentry_data)
 print(de)
 
 
-de2 = DirectoryEntry(inode=7, rec_len=999, name_len=123, file_type=7, name=b'prueba123.txt')
+de2 = DirectoryEntry(inode=7, rec_len=100, name_len=123, file_type=999, name="prüébà.txt")
 print(de2)
+print(f"{de2.name}\n")
 
-de3 = DirectoryEntry(rec_len=30, name_len=90, file_type=5)
+de3 = DirectoryEntry(rec_len=30, file_type=5)
 print(de3)
 
 d4 = DirectoryEntry()
