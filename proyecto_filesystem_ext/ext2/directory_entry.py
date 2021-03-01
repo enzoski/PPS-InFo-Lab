@@ -1,4 +1,5 @@
 # Creo que ya estaria completa esta clase
+# (igual faltaria ver lo de los parseos en los getters o setters, como en las demás clases)
 
 import struct
 
@@ -25,19 +26,32 @@ class DirectoryEntry:
     are added for padding at the end of the filename, if necessary.
     (but the 'name_len' field stores the actual file name length)
     """
-    def __init__(self, data):
+    def __init__(self, data=bytes(8),
+                 inode=None, rec_len=None, name_len=None, file_type=None, name=None
+                 ):
+
+        p_inode     = struct.unpack("<I", data[0:4])[0]
+        p_rec_len   = struct.unpack("<H", data[4:6])[0]
+        p_name_len  = struct.unpack("<B", data[6:7])[0]
+        p_file_type = struct.unpack("<B", data[7:8])[0]
+        # I directly assign the raw binaries to it and then in the '__str__' I make it a 'decode'.
+        p_name      = data[8:8+p_name_len] # variable length
+        # note: by default, the 'slice' will return b'' (empty bytestring) and not IndexError
+
         self._raw_data = data
-        # ---
-        self._inode     = -1
-        self._rec_len   = -1 # in bytes
-        self._name_len  = -1
-        self._file_type = -1
-        self._name      = b'' # up to 255 chars
-        # ---
-        self._parse()
+
+        self.inode     = inode     or p_inode
+        self.rec_len   = rec_len   or p_rec_len
+        self.name_len  = name_len  or p_name_len
+        self.file_type = file_type or p_file_type
+        self.name      = name      or p_name
 
     @property
     def raw_data(self):
+        """
+        Bytes to be parsed (are the [8 to n] bytes corresponding to the structure
+        of a directory entry)
+        """
         return self._raw_data
 
     @raw_data.setter
@@ -48,49 +62,60 @@ class DirectoryEntry:
 
     @property
     def inode(self):
+        """
+        Inode number representing the file or directory
+        """
         return self._inode
 
     @inode.setter
     def inode(self, value):
-        self._inode = value
+        # así evitamos que nos manden tipos de datos que no tengan una representacion numérica.
+        # o sea, en esos casos, se lanzará una excepción.
+        self._inode = int(value)
 
     @property
     def rec_len(self):
+        """
+        Directory entry length (in bytes)
+        """
         return self._rec_len
 
     @rec_len.setter
     def rec_len(self, value):
-        self._rec_len = value
+        self._rec_len = int(value)
 
     @property
     def name_len(self):
+        """
+        Filename length
+        """
         return self._name_len
 
     @name_len.setter
     def name_len(self, value):
-        self._name_len = value
+        self._name_len = int(value)
 
-    # Returns a string corresponding to the file type.
     @property
     def file_type(self):
+        """
+        Returns a string corresponding to the file type
+        """
         return file_types[self._file_type]
 
     @file_type.setter
     def file_type(self, value):
-        self._file_type = value
+        self._file_type = int(value)
 
     @property
     def name(self):
+        """
+        Filename (up to 255 chars)
+        """
         return self._name
 
-    # Truncate the byte-string to the first occurrence of '\0', if it exists ('\0' == null character == 0x00 == '\x00')
     @name.setter
     def name(self, value):
-        null_char_index = value.find(b'\0')
-        if null_char_index != -1:
-            self._name = value[0:null_char_index]
-        else:
-            self._name = value
+        self._name = value
 
     # ---
 
@@ -103,17 +128,6 @@ class DirectoryEntry:
                 f"Filename:               {self.name.decode('latin1')}\n" # uso esta codificacion u otra???
             )
 
-    def _parse(self):
-        self.inode     = struct.unpack("<I", self._raw_data[0:4])[0]
-        self.rec_len   = struct.unpack("<H", self._raw_data[4:6])[0]
-        self.name_len  = struct.unpack("<B", self._raw_data[6:7])[0]
-        self.file_type = struct.unpack("<B", self._raw_data[7:8])[0]
-        # I directly assign the raw binaries to it and then in the '__str__' I make it a 'decode'.
-        self.name      = self._raw_data[8:self.rec_len] # variable length
-
-        # esta seria otra forma de hacer el 'unpack'
-        # self.inode, self.rec_len, self.name_len, self.file_type = struct.unpack("<IHBB", self._raw_data[0:8])
-
 
 # -----------pruebas------------------------------------------------------------
 
@@ -124,14 +138,20 @@ with open(filename, "wb") as f:
     f.write(struct.pack("<H", 12))
     f.write(struct.pack("<B", 3))
     f.write(struct.pack("<B", 2))
-    f.write(b'usr\0')
+    f.write(b'usr\0') # (b'\0' == null character == 0x00 == b'\x00')
 
 with open(filename, "rb") as f:
     dentry_data = f.read()
 
 de = DirectoryEntry(dentry_data)
 print(de)
-    
-    
-    
-    
+
+
+de2 = DirectoryEntry(inode=7, rec_len=999, name_len=123, file_type=7, name=b'prueba123.txt')
+print(de2)
+
+de3 = DirectoryEntry(rec_len=30, name_len=90, file_type=5)
+print(de3)
+
+d4 = DirectoryEntry()
+print(d4)
