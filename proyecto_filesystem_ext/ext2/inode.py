@@ -1,6 +1,7 @@
 # Cosas a revisar:
-#  - en 'file_types' no se bien que numeracion poner, porque segun
+#  - en 'file_types' no se bien qué numeracion poner, porque segun
 #    https://www.nongnu.org/ext2-doc/ext2.html#i-mode y https://wiki.osdev.org/Ext2#Inode_Type_and_Permissions, es otra.
+#    (pero para el directory_entry sí es esta)
 #  - no se bien si hacer ciertos parseos en el setter o en el getter (como el caso de 'i_mode' o 'i_flags')
 #  - fijarme lo de las funciones de inodos (definidas al final de la clase)
 
@@ -59,35 +60,60 @@ class Inode:
     about it and pointers to its assigned data blocks (or directory blocks).
     All inodes have the same size: 128 bytes.
     """
-    def __init__(self, data):
+    def __init__(self, data=bytes(128),
+                 i_mode=None, i_uid=None, i_size=None, i_atime=None, i_ctime=None,
+                 i_mtime=None, i_dtime=None, i_gid=None, i_links_count=None,
+                 i_blocks=None, i_flags=None, osd1=None, i_block=None, i_generation=None,
+                 i_file_acl=None, i_dir_acl=None, i_faddr=None, osd2=None
+                 ):
+
+        p_i_mode        = struct.unpack("<H", data[0:2])[0]
+        p_i_uid         = struct.unpack("<H", data[2:4])[0]
+        p_i_size        = struct.unpack("<I", data[4:8])[0]
+        p_i_atime       = struct.unpack("<I", data[8:12])[0]
+        p_i_ctime       = struct.unpack("<I", data[12:16])[0]
+        p_i_mtime       = struct.unpack("<I", data[16:20])[0]
+        p_i_dtime       = struct.unpack("<I", data[20:24])[0]
+        p_i_gid         = struct.unpack("<H", data[24:26])[0]
+        p_i_links_count = struct.unpack("<H", data[26:28])[0]
+        p_i_blocks      = struct.unpack("<I", data[28:32])[0]
+        p_i_flags       = struct.unpack("<I", data[32:36])[0]
+        p_osd1          = struct.unpack("<I", data[36:40])[0]
+        p_i_block       = struct.unpack("<IIIIIIIIIIIIIII", data[40:100])
+        p_i_generation  = struct.unpack("<I", data[100:104])[0]
+        p_i_file_acl    = struct.unpack("<I", data[104:108])[0]
+        p_i_dir_acl     = struct.unpack("<I", data[108:112])[0]
+        p_i_faddr       = struct.unpack("<I", data[112:116])[0]
+        p_osd2          = struct.unpack("<III", data[116:128])
+
         self._raw_data = data
-        # ---
-        self._i_mode        = -1
-        self._i_uid         = b'' #por si lo represento como string
-        self._i_size        = -1 # Effective length of the file in bytes
-        self._i_atime       = None #representaré los timestamps con objetos DateTime
-        self._i_ctime       = None
-        self._i_mtime       = None
-        self._i_dtime       = None
-        self._i_gid         = b''
-        self._i_links_count = -1
-        self._i_blocks      = -1 # Number of data blocks (in units of 512 bytes: sectors) that have been allocated to the file.
-        self._i_flags       = -1
-        self._osd1          = -1 # Specific operating system information (4 bytes)
-        self._i_block       = [] # Pointers to data blocks (usually 15)
-        self._i_generation  = -1
-        self._i_file_acl    = -1
-        self._i_dir_acl     = -1 # Is not used for regular files
-        self._i_faddr       = -1
-        self._osd2          = -1 # Specific operating system information (12 bytes)
-        # ---
-        self._parse()
+
+        self.i_mode        = i_mode        or p_i_mode
+        self.i_uid         = i_uid         or p_i_uid
+        self.i_size        = i_size        or p_i_size
+        self.i_atime       = i_atime       or p_i_atime
+        self.i_ctime       = i_ctime       or p_i_ctime
+        self.i_mtime       = i_mtime       or p_i_mtime
+        self.i_dtime       = i_dtime       or p_i_dtime
+        self.i_gid         = i_gid         or p_i_gid
+        self.i_links_count = i_links_count or p_i_links_count
+        self.i_blocks      = i_blocks      or p_i_blocks
+        self.i_flags       = i_flags       or p_i_flags
+        self.osd1          = osd1          or p_osd1
+        self.i_block       = i_block       or p_i_block
+        self.i_generation  = i_generation  or p_i_generation
+        self.i_file_acl    = i_file_acl    or p_i_file_acl
+        self.i_dir_acl     = i_dir_acl     or p_i_dir_acl
+        self.i_faddr       = i_faddr       or p_i_faddr
+        self.osd2          = osd2          or p_osd2
+
+        # 'i_': inode ; 'p_': parsed
 
     @property
     def raw_data(self):
         """
-        Bytes to be parsed (are the 128 bytes corresponding to the structure
-        of an inode)
+        Bytes to be parsed.
+        (are the 128 bytes corresponding to the structure of an inode)
         """
         return self._raw_data
 
@@ -110,10 +136,10 @@ class Inode:
 
         f_rights = self._i_mode & 0x0fff
 
-        # process control bits (I don't really concatenate them in the final string for now)
+        # process control bits (I don't really concatenate them in the final string, for now)
         set_process_user_id =  ((f_rights & 0b100000000000) >> 11) == 1
         set_process_group_id = ((f_rights & 0b010000000000) >> 10) == 1
-        sticky_bit =           ((f_rights & 0b001000000000) >> 9) == 1
+        sticky_bit =           ((f_rights & 0b001000000000) >>  9) == 1
 
         # access rights bits
         owner_rights = (f_rights & 0b000111000000) >> 6
@@ -133,7 +159,7 @@ class Inode:
 
     @i_mode.setter
     def i_mode(self, value):
-        self._i_mode = value
+        self._i_mode = int(value)
 
     @property
     def i_uid(self):
@@ -143,7 +169,7 @@ class Inode:
         return self._i_uid
 
     @i_uid.setter
-    def i_uid(self, value):
+    def i_uid(self, value): #quizas lo represente como string
         self._i_uid = value
 
     @property
@@ -155,17 +181,18 @@ class Inode:
 
     @i_size.setter
     def i_size(self, value):
-        self._i_size = value
+        self._i_size = int(value)
 
     # ---------------------------------------------------------
 
     # All 'timestamps' of files in ext2 are based on 'POSIX time' (https://en.wikipedia.org/wiki/Unix_time),
     # that is, the number of seconds that have elapsed since the Unix epoch
     # (january 1st 1970, 00:00:00 UTC). All the fields that store dates in ext2,
-    # have 4 bytes (unsigned), therefore 2^32 seconds can be stored (it will be enough until the year 2106)
+    # have 4 bytes (unsigned), therefore 2^32 seconds can be stored (it will be enough until the year 2106 :-) )
     # Python has a method of the class 'datetime' (datetime module) that converts
     # 'POSIX time' to local time (it converts it to our time zone, not to UTC 0, which comes in handy)
     # See: https://docs.python.org/3/library/datetime.html#datetime.datetime.fromtimestamp
+    # So, I will represent the timestamps with DateTime objects.
 
     @property
     def i_atime(self):
@@ -233,18 +260,19 @@ class Inode:
 
     @i_links_count.setter
     def i_links_count(self, value):
-        self._i_links_count = value
+        self._i_links_count = int(value)
 
     @property
     def i_blocks(self):
         """
-        Number of data blocks (in units of 512 bytes) of the file (count of disk sectors).
+        Number of data blocks (in units of 512 bytes) that have been allocated
+        to the file (count of disk sectors).
         """
         return self._i_blocks
 
     @i_blocks.setter
     def i_blocks(self, value):
-        self._i_blocks = value
+        self._i_blocks = int(value)
 
     @property
     def i_flags(self):
@@ -257,10 +285,11 @@ class Inode:
             if k != 0:
                 flag_list.append(file_flags[k]) # los bits en 0 representarán un string vacio, y los 1, un flag.
         return ", ".join(flag_list) # esto lo hago para que se vea "mejor" el string.
+        #no se si se podria hacer esto con una lista por comprension ("List Comprehension").
 
     @i_flags.setter
     def i_flags(self, value):
-        self._i_flags = value
+        self._i_flags = int(value)
 
     @property
     def osd1(self):
@@ -277,12 +306,13 @@ class Inode:
     def i_block(self):
         """
         Pointers to data blocks (12 direct and 3 indirect)
+        (I will store them in a list)
         """
         return self._i_block
 
     @i_block.setter
     def i_block(self, value):
-        self._i_block = value
+        self._i_block = list(value)
 
     @property
     def i_generation(self):
@@ -355,27 +385,6 @@ class Inode:
                 # faltarian los demás (si es que decido querer mostrarlos)
             )
 
-    def _parse(self):
-        self.i_mode        = struct.unpack("<H", self._raw_data[0:2])[0]
-        self.i_uid         = struct.unpack("<H", self._raw_data[2:4])[0]
-        self.i_size        = struct.unpack("<I", self._raw_data[4:8])[0]
-        self.i_atime       = struct.unpack("<I", self._raw_data[8:12])[0]
-        self.i_ctime       = struct.unpack("<I", self._raw_data[12:16])[0]
-        self.i_mtime       = struct.unpack("<I", self._raw_data[16:20])[0]
-        self.i_dtime       = struct.unpack("<I", self._raw_data[20:24])[0]
-        self.i_gid         = struct.unpack("<H", self._raw_data[24:26])[0]
-        self.i_links_count = struct.unpack("<H", self._raw_data[26:28])[0]
-        self.i_blocks      = struct.unpack("<I", self._raw_data[28:32])[0]
-        self.i_flags       = struct.unpack("<I", self._raw_data[32:36])[0]
-        self.osd1          = struct.unpack("<I", self._raw_data[36:40])[0]
-        self.i_block       = list(struct.unpack("<IIIIIIIIIIIIIII", self._raw_data[40:100]))
-        self.i_generation  = struct.unpack("<I", self._raw_data[100:104])[0]
-        self.i_file_acl    = struct.unpack("<I", self._raw_data[104:108])[0]
-        self.i_dir_acl     = struct.unpack("<I", self._raw_data[108:112])[0]
-        self.i_faddr       = struct.unpack("<I", self._raw_data[112:116])[0]
-        self.osd2          = struct.unpack("<III", self._raw_data[116:128])
-
-
     # Ext2 Inode Operations
 
     # only if the inode refers to a regular file
@@ -438,7 +447,7 @@ with open(filename, "wb") as f:
     f.write(struct.pack("<I", 700))
     f.write(struct.pack("<I", 416)) # 00 0001 1010 0000 ("append only", "do not update .i_atime" y "dirty")
     f.write(struct.pack("<I", 0))
-    f.write(struct.pack("<IIIIIIIIIIIIIII", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    f.write(struct.pack("<IIIIIIIIIIIIIII", 0, 0, 0, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 5, 0))
     f.write(struct.pack("<I", 0))
     f.write(struct.pack("<I", 0))
     f.write(struct.pack("<I", 0))
@@ -451,8 +460,18 @@ with open(filename, "rb") as f:
 ind = Inode(inode_data)
 print(ind)
 
+# queria ver si se veian los True y False de los bits de control.
 #ind.i_mode = 0b0010111111101100
 #print(ind.i_mode)
 
+# queria ver como se verían los punteros a los bloques de datos.
 print(ind.i_block)
 print(type(ind.i_block))
+
+print("")
+
+inode_2 = Inode(i_mode=0x1fff, i_atime=1614745834, i_flags=0b1000000000000)
+print(inode_2)
+
+inode_3 = Inode()
+print(inode_3)
