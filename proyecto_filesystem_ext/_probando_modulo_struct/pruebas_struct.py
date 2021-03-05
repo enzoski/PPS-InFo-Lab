@@ -49,3 +49,6 @@ decimal_1, decimal_2 = struct.unpack("<BB", raw_data_4)
 print(decimal_1, decimal_2)
 
 # ------------------------------------------------------------------------------
+
+# El 'unpack' devuelve la representacion decimal de los binarios dados (agrupados en bytes) segun el formato especificado.
+# El 'pack' devuelve la representacion binaria (agrupados en bytes) de los decimales dados segun el formato especificado.
