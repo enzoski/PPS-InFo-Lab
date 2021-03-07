@@ -1,14 +1,13 @@
 # Cosas a revisar:
-#  - ver si saco los atributos referidos a la fragmentacion (y sus g & s) o no. -> DEJARLOS
 #  - ver bien si lo del getter deberia ir en el setter (en s_log_block_size y s_state). -> POR AHORA QUE QUEDE ASÍ
-#  - el tema de que el 'unpack' devuelve tuplas, y tengo que colocar al final '[0]'.
-#  - los metodos/operaciones en sí del superbloque (definidas al final)
-#  - del pdf de ext2/3, respecto al superbloque, solo me faltaria aplicar lo de 's_state' que dice al final. -> HECHO
-#  - ver bien el tema del parseo de fechas y horas (usan formato UNIX) -> HECHO
+#  - el tema de que el 'unpack' devuelve tuplas, y tengo que colocar al final '[0]'. (igual no pasa nada)
+#  - los metodos/operaciones en sí del superbloque (definidas al final).
+#  - lo que comenté en 's_uuid.setter'.
 #  - en s_checkinterval quizas habria que mostrar solo los dias, o las horas.
 #  - quizas faltaria implementar el getter de 's_feature_compat', 's_feature_incompat' y 's_feature_ro_compat'
-#    (https://www.nongnu.org/ext2-doc/ext2.html#s-feature-compat)
-#  - quizas faltaria implementar el getter de 's_algo_bitmap' (https://www.nongnu.org/ext2-doc/ext2.html#s-algo-bitmap)
+#    (https://www.nongnu.org/ext2-doc/ext2.html#s-feature-compat).
+#  - quizas faltaria implementar el getter de 's_algo_bitmap' (https://www.nongnu.org/ext2-doc/ext2.html#s-algo-bitmap).
+#  - quizás estaría bueno agregar el dunder __len__(), y en las otras clases también.
 
 import datetime
 import struct
@@ -92,7 +91,7 @@ class Superblock:
         p_s_reserved          = data[208:1024]
         # para ext3 hay algunos campos más: https://www.nongnu.org/ext2-doc/ext2.html#superblock
 
-        self._raw_data = data # la lectura en crudo del disco (los 1024 bytes del superbloque).
+        self._raw_data = data # the raw read from the disk (the 1024 bytes of the superblock).
 
         self.s_inodes_count      = s_inodes_count      or p_s_inodes_count
         self.s_blocks_count      = s_blocks_count      or p_s_blocks_count
@@ -138,6 +137,7 @@ class Superblock:
         self.s_padding1 = s_padding1 or p_s_padding1
         self.s_reserved = s_reserved or p_s_reserved
 
+        # 's_': superblock ; 'p_': parsed
 
     @property
     def raw_data(self):
@@ -160,7 +160,7 @@ class Superblock:
 
     @s_inodes_count.setter
     def s_inodes_count(self, value):
-        self._s_inodes_count = value
+        self._s_inodes_count = int(value)
 
     @property
     def s_blocks_count(self):
@@ -169,7 +169,7 @@ class Superblock:
 
     @s_blocks_count.setter
     def s_blocks_count(self, value):
-        self._s_blocks_count = value
+        self._s_blocks_count = int(value)
 
     @property
     def s_r_blocks_count(self):
@@ -178,7 +178,7 @@ class Superblock:
 
     @s_r_blocks_count.setter
     def s_r_blocks_count(self, value):
-        self._s_r_blocks_count = value
+        self._s_r_blocks_count = int(value)
 
     @property
     def s_free_blocks_count(self):
@@ -187,7 +187,7 @@ class Superblock:
 
     @s_free_blocks_count.setter
     def s_free_blocks_count(self, value):
-        self._s_free_blocks_count = value
+        self._s_free_blocks_count = int(value)
 
     @property
     def s_free_inodes_count(self):
@@ -196,7 +196,7 @@ class Superblock:
 
     @s_free_inodes_count.setter
     def s_free_inodes_count(self, value):
-        self._s_free_inodes_count = value
+        self._s_free_inodes_count = int(value)
 
     @property
     def s_first_data_block(self):
@@ -212,7 +212,7 @@ class Superblock:
 
     @s_first_data_block.setter
     def s_first_data_block(self, value):
-        self._s_first_data_block = value
+        self._s_first_data_block = int(value)
 
     @property
     def s_log_block_size(self):
@@ -268,7 +268,7 @@ class Superblock:
 
     @s_blocks_per_group.setter
     def s_blocks_per_group(self, value):
-        self._s_blocks_per_group = value
+        self._s_blocks_per_group = int(value)
 
     @property
     def s_frags_per_group(self):
@@ -277,7 +277,7 @@ class Superblock:
 
     @s_frags_per_group.setter
     def s_frags_per_group(self, value):
-        self._s_frags_per_group = value
+        self._s_frags_per_group = int(value)
 
     @property
     def s_inodes_per_group(self):
@@ -286,7 +286,7 @@ class Superblock:
 
     @s_inodes_per_group.setter
     def s_inodes_per_group(self, value):
-        self._s_inodes_per_group = value
+        self._s_inodes_per_group = int(value)
 
     # ---
 
@@ -316,7 +316,7 @@ class Superblock:
 
     @s_mnt_count.setter
     def s_mnt_count(self, value):
-        self._s_mnt_count = value
+        self._s_mnt_count = int(value)
 
     @property
     def s_max_mnt_count(self):
@@ -325,7 +325,7 @@ class Superblock:
 
     @s_max_mnt_count.setter
     def s_max_mnt_count(self, value):
-        self._s_max_mnt_count = value
+        self._s_max_mnt_count = int(value)
 
     @property
     def s_magic(self):
@@ -337,7 +337,7 @@ class Superblock:
 
     @s_magic.setter
     def s_magic(self, value):
-        self._s_magic = value
+        self._s_magic = int(value)
     
     @property
     def s_state(self):
@@ -361,7 +361,7 @@ class Superblock:
 
     @s_state.setter
     def s_state(self, value):
-        self._s_state = value
+        self._s_state = int(value)
 
     @property
     def s_errors(self):
@@ -379,7 +379,7 @@ class Superblock:
 
     @s_errors.setter
     def s_errors(self, value):
-        self._s_errors = value
+        self._s_errors = int(value)
 
     @property
     def s_minor_rev_level(self):
@@ -388,7 +388,7 @@ class Superblock:
 
     @s_minor_rev_level.setter
     def s_minor_rev_level(self, value):
-        self._s_minor_rev_level = value
+        self._s_minor_rev_level = int(value)
 
     @property
     def s_lastcheck(self):
@@ -428,7 +428,7 @@ class Superblock:
 
     @s_creator_os.setter
     def s_creator_os(self, value):
-        self._s_creator_os = value
+        self._s_creator_os = int(value)
 
     @property
     def s_rev_level(self):
@@ -437,7 +437,7 @@ class Superblock:
 
     @s_rev_level.setter
     def s_rev_level(self, value):
-        self._s_rev_level = value
+        self._s_rev_level = int(value)
 
     @property
     def s_def_resuid(self):
@@ -446,7 +446,7 @@ class Superblock:
 
     @s_def_resuid.setter
     def s_def_resuid(self, value):
-        self._s_def_resuid = value
+        self._s_def_resuid = int(value)
 
     @property
     def s_def_resgid(self):
@@ -455,7 +455,7 @@ class Superblock:
 
     @s_def_resgid.setter
     def s_def_resgid(self, value):
-        self._s_def_resgid = value
+        self._s_def_resgid = int(value)
 
     # ---
 
@@ -471,7 +471,7 @@ class Superblock:
 
     @s_first_ino.setter
     def s_first_ino(self, value):
-        self._s_first_ino = value
+        self._s_first_ino = int(value)
 
     @property
     def s_inode_size(self):
@@ -486,7 +486,7 @@ class Superblock:
 
     @s_inode_size.setter
     def s_inode_size(self, value):
-        self._s_inode_size = value
+        self._s_inode_size = int(value)
 
     @property
     def s_block_group_nr(self):
@@ -496,7 +496,7 @@ class Superblock:
 
     @s_block_group_nr.setter
     def s_block_group_nr(self, value):
-        self._s_block_group_nr = value
+        self._s_block_group_nr = int(value)
 
     # ---
     
@@ -578,7 +578,7 @@ class Superblock:
 
     @s_prealloc_blocks.setter
     def s_prealloc_blocks(self, value):
-        self._s_prealloc_blocks = value
+        self._s_prealloc_blocks = int(value)
 
     @property
     def s_prealloc_dir_blocks(self):
@@ -587,7 +587,7 @@ class Superblock:
 
     @s_prealloc_dir_blocks.setter
     def s_prealloc_dir_blocks(self, value):
-        self._s_prealloc_dir_blocks = value
+        self._s_prealloc_dir_blocks = int(value)
 
     # ---
 
@@ -731,3 +731,9 @@ print(sb)
 # quería ver como se comportaba el atributo s_errors
 # sb.s_errors = 3
 # print(sb.s_errors)
+
+sb_2 = Superblock(s_log_block_size=1, s_state=1, s_creator_os=4)
+print(sb_2)
+
+sb_3 = Superblock()
+print(sb_3)
