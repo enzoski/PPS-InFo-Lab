@@ -15,7 +15,7 @@ file_types = {
 }
 
 # Filename encoding
-ENCODING = 'utf-8' # generally UTF-8 is used
+ENCODING = 'latin-1' # generally latin-1 is used
 
 class DirectoryEntry:
     """
@@ -52,8 +52,8 @@ class DirectoryEntry:
     @property
     def raw_data(self):
         """
-        Bytes to be parsed (are the [8 to n] bytes corresponding to the structure
-        of a directory entry)
+        Bytes to be parsed.
+        (are the [8 to n] bytes corresponding to the structure of a directory entry)
         """
         return self._raw_data
 
