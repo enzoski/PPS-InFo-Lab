@@ -1,5 +1,6 @@
 # Cosas a revisar (y creo que ya estaria completa esta clase):
 #  - ver si son necesarios los getters y setters de 'bg_pad' y 'bg_reserved'
+#    (yo diria de dejarlos, pero no mostrarlos en el __str__)
 #  - en el pdf de ext2/3, en esta seccion del group descriptor tambien habla
 #    sobre los bitmaps de bloques e inodos, pero creo que tocaré ese tema
 #    cuando haga la clase 'ext2' que englobe todo.
@@ -8,13 +9,12 @@ import struct
 
 class GroupDescriptor:
     """
-    Class representing the Group Descriptor of an ext2 filesystem.
+    Class representing a Group Descriptor of an ext2 filesystem.
     Each block group has its own group descriptor (which has information about the group).
 
     Actually, each block group contains a table of group descriptors,
-    that is, each entry contains the information of each block group in the
-    filesystem. (yes, just like the superblock, there is a copy of this table
-    in each block group)
+    that is, each entry contains the information of each block group in the filesystem.
+    (yes, just like the superblock, there is a copy of this table in each block group)
     """
     def __init__(self, data=bytes(32),
                  bg_block_bitmap=None, bg_inode_bitmap=None, bg_inode_table=None,
@@ -41,6 +41,8 @@ class GroupDescriptor:
         self.bg_used_dirs_count   = bg_used_dirs_count   or p_bg_used_dirs_count
         self.bg_pad               = bg_pad               or p_bg_pad
         self.bg_reserved          = bg_reserved          or p_bg_reserved
+
+        # 'bg_': block group ; 'p_': parsed
 
     @property
     def raw_data(self):
@@ -160,29 +162,3 @@ class GroupDescriptor:
                 f"Nulls to pad out 32 bytes:               {self.bg_reserved}\n"
             )
 
-# -----------pruebas------------------------------------------------------------
-
-filename = "prueba_gd.bin"
-
-with open(filename, "wb") as f:
-    f.write(struct.pack("<I", 3))
-    f.write(struct.pack("<I", 4))
-    f.write(struct.pack("<I", 5))
-    f.write(struct.pack("<H", 50))
-    f.write(struct.pack("<H", 20))
-    f.write(struct.pack("<H", 40))
-    f.write(struct.pack("<H", 0))
-    f.write(struct.pack("<III", 0, 0, 0))
-
-with open(filename, "rb") as f:
-    gd_data = f.read()
-
-gd = GroupDescriptor(gd_data)
-print(gd)
-
-
-gd_2 = GroupDescriptor(bg_inode_bitmap=999, bg_free_inodes_count=7)
-print(gd_2)
-
-gd_3 = GroupDescriptor()
-print(gd_3)

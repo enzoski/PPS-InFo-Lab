@@ -140,31 +140,3 @@ class DirectoryEntry:
                 f"Filename:               {self.name.decode(ENCODING)}\n"
             )
 
-
-# -----------pruebas------------------------------------------------------------
-
-filename = "prueba_dentry.bin"
-
-with open(filename, "wb") as f:
-    f.write(struct.pack("<I", 67))
-    f.write(struct.pack("<H", 12))
-    f.write(struct.pack("<B", 3))
-    f.write(struct.pack("<B", 2))
-    f.write(b'usr\0') # (b'\0' == null character == 0x00 == b'\x00')
-
-with open(filename, "rb") as f:
-    dentry_data = f.read()
-
-de = DirectoryEntry(dentry_data)
-print(de)
-
-
-de2 = DirectoryEntry(inode=7, rec_len=100, name_len=123, file_type=999, name="prüébà.txt")
-print(de2)
-print(f"{de2.name}\n")
-
-de3 = DirectoryEntry(rec_len=30, file_type=5)
-print(de3)
-
-d4 = DirectoryEntry()
-print(d4)
