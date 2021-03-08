@@ -1,23 +1,29 @@
 # Cosas a revisar:
-#  - en 'file_types' no se bien qué numeracion poner, porque segun
-#    https://www.nongnu.org/ext2-doc/ext2.html#i-mode y https://wiki.osdev.org/Ext2#Inode_Type_and_Permissions, es otra.
-#    (pero para el directory_entry sí es esta)
 #  - no se bien si hacer ciertos parseos en el setter o en el getter (como el caso de 'i_mode' o 'i_flags')
-#  - fijarme lo de las funciones de inodos (definidas al final de la clase)
+#    -> POR AHORA QUE QUEDEN ASÍ.
+#  - fijarme lo de las funciones de inodos (definidas al final de la clase).
+#  - tengo que ver bien el tema de los timestamps, porque haciendo una prueba en un pendrive que formatee en ext2,
+#    al leer la fecha de creación me di cuenta que se grabó/escribió en UTC-3, y entonces el datetime.fromtimestamp()
+#    al hacer la conversion a nuestra zona horaria (UTC-3), resta 3 horas, entonces queda inconsistente.
+#    De ser siempre así (que al manipular archivos de ext2 las fechas se escriban en la zona horaria de la PC), tengo
+#    que agregar un parámetro al método .fromtimestamp() para que no la convierta. Pero el tema de esto, es que al mostrar
+#    las fechas, no sabremos a qué zona horaria pertenecen, salvo que sepamos exactamente la zona horaria de la PC donde
+#    se grabaron esas fechas.
+#    Y ademas, hacer algo para que cuando una fecha no esté definida (como la de eliminacion), no nos muestre el 1/1/1970.
 
 import datetime
 import struct
 
 # Types of files recognized by Ext2 (used in 'i_mode' field)
 file_types = {
-    0: 'u', # "Unknown"
-    1: '-', # "Regular file"
-    2: 'd', # "Directory"
-    3: 'c', # "Character device"
-    4: 'b', # "Block device"
-    5: 'p', # "Named pipe"
-    6: 's', # "Socket"
-    7: 'l', # "Symbolic link"
+    0x0: 'u', # "Unknown"
+    0x1: 'p', # "Named pipe / FIFO"
+    0x2: 'c', # "Character device"
+    0x4: 'd', # "Directory"
+    0x6: 'b', # "Block device"
+    0x8: '-', # "Regular file"
+    0xA: 'l', # "Symbolic link"
+    0xC: 's', # "Socket"
 }
 
 # Permissions a user has on a file (used in 'i_mode' field)
@@ -58,6 +64,10 @@ class Inode:
     Class representing an i-node of an ext2 filesystem.
     An inode is associated with a file (or directory), and contains metadata
     about it and pointers to its assigned data blocks (or directory blocks).
+
+    An inode corresponds to a single file, therefore there is one inode
+    for each file (or directory) in the filesystem.
+
     All inodes have the same size: 128 bytes.
     """
     def __init__(self, data=bytes(128),
@@ -435,7 +445,7 @@ class Inode:
 filename = "prueba_inode.bin"
 
 with open(filename, "wb") as f:
-    f.write(struct.pack("<H", 8684)) # 0010 0001 1110 1100 (será un directorio donde el dueño puede hacer todo, el grupo solo leer y ejecutar, y 'otros' solo leer)
+    f.write(struct.pack("<H", 16876)) # 0010 0001 1110 1100 (será un directorio donde el dueño puede hacer todo, el grupo solo leer y ejecutar, y 'otros' solo leer)
     f.write(struct.pack("<H", 123))
     f.write(struct.pack("<I", 2**20)) # 1MiB
     f.write(struct.pack("<I", 0))          # esto no nos muestra el 1° de enero de 1970,
@@ -470,7 +480,7 @@ print(type(ind.i_block))
 
 print("")
 
-inode_2 = Inode(i_mode=0x1fff, i_atime=1614745834, i_flags=0b1000000000000)
+inode_2 = Inode(i_mode=0x8fff, i_atime=1614745834, i_flags=0b1000000000000)
 print(inode_2)
 
 inode_3 = Inode()
