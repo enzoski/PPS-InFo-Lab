@@ -1,0 +1,17 @@
+El inodo que representa al directorio raiz, tiene un único puntero != null a bloques de datos, esto lo podemos ver en su arreglo de punteros (12 directos y 3 indirectos). En este caso, el primer puntero directo apunta al bloque número 290.
+
+En ese bloque del filesystem (es absoluto, de la totalidad del filesystem), estarán los archivos y directorios que contiene, es decir, una serie de entradas de directorio, de tamaño variable (8 + filename_len), pero que siempre son multiplo de 4.
+
+Para acceder a cualquier bloque del filesystem, se multiplica el n° de bloque por el tamaño del bloque. En este caso, la posicion del bloque 290 dentro del filesystem es: 290*1024 = 296.960 (habría que ir al n° de byte u offset 296.960).
+
+Pero recordemos que cuando abrimos un dispositivo de almacenamiento para leerlo, estamos justamente abriendo el dispositivo completo. Por lo que primero nos tenemos que posicionar al inicio de la particion que tenga el filesystem que estamos analizando (esto nos lo dice la MBR o GPT). En este caso, la particion comienza en el sector 2048, es decir, el byte n° 2048*512.
+
+Una vez posicionado (seek) al principio de la particion, ahí sí nos movemos a la posicion 296.960.
+
+Y ahora es cuestion de ir leyendo (read) los directory entry.
+
+----------------------------------------------------------------------------------
+
+Como otro dato, el último directory entry que entre bien en el bloque, apuntará al final del bloque; es decir, el atributo entry_length tendra la cantidad de bytes restantes para llegar al final del bloque (en este caso, hasta llegar al byte n° 1024). En este caso, el ultimo archivo es "comando-ls-a-l.png", con un tamaño de entrada/registro de 644 bytes.
+
+Y cuando un archivo es eliminado del filesystem, lo que realmente pasa es que se marca en su directory entry, inodo=0 (como un inodo null, nadie representa a ese archivo), y el entry_length del directory entry anterior, se lo incrementa con el del 'eliminado', para que en proximas lecturas, la entrada 'eliminada' sea salteada.
