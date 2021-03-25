@@ -1,0 +1,1 @@
+La tabla de particiones es independiente del filesystem que tenga cada una de las particiones del disco. Por ende, ext2 es "compatible" tanto con MBR como con GPT (obviamente saben qué tipo de filesystem tienen, por ejemplo en MBR hay diferentes códigos que los identifican).

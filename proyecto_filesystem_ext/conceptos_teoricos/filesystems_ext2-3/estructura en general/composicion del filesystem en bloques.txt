@@ -1,0 +1,21 @@
+El tamaño del filesystem (en bloques) se divide en:
+
+Si el tamaño del bloque es = 1K (1024 bytes)
+------------------------------------------
+boot_area + (total_blocks - 1 // blocks_per_group)*blocks_per_group + (total_blocks-1 % blocks_per_group)
+
+Si el tamaño del bloque es > 1K (2K o 4K)
+------------------------------------------
+(total_blocks // blocks_per_group)*blocks_per_group + (total_blocks % blocks_per_group)
+
+El area de boot siempre son los primeros 2 sectores de la partición (512*2=1024), entonces si el tamaño del bloque del filesystem es 1K, el primer bloque
+estará ocupado por el boot area, y el resto para los block groups; en cambio si el tamaño de bloque es 2K o 4K, el primer bloque incluirá tambien
+al superbloque (que ocupa 1K), el cual es parte del primer block group, entonces directamente toda la particion se divide en block groups.
+
+Si no entra una cantidad entera de block groups en la particion, al final se incluirá otro mas pero con una cantidad de bloques asignados menor a blocks_per_group,
+y quizas incluso no tenga una copia del superbloque y de la tabla de descriptores de grupos.
+
+---
+
+En el caso del pendrive sería:
+1 + 956*8192 + 2047
