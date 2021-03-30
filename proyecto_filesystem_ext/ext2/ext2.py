@@ -14,7 +14,7 @@
 #    En Windows sería por ejemplo C:\..., pero tengo que ver como es el path cuando nosotros le damos un nombre/etiqueta
 #    al volumen/particion (por ejemplo, al formatear un pendrive). Además tengo que ver bien como se forma el path en Linux
 #    en base al nombre, ya que acá lo voy a hacer respetando el formato Linux.
-#  - Estaria bueno agregar metodos como 'read_block(block_number)', 'read_inode(inode_number)', etc...
+#  - Podría implementar los métodos que dejé definidos en los otros archivos (en las clases de las estructuras).
 
 # NOTA: siempre que se habla de un "número de bloque" o "número de inodo", se habla de manera absoluta,
 #       es decir, ese número de bloque/inodo en la totalidad del filesystem (y si es relativo a algo,
@@ -66,15 +66,22 @@ class Directory:
         ret += "-------------------------\n"
         return ret
 
-    def _read_dentries(self, block_number, block_size):
+    def _read_dentries(self, block_number):
+        """
+        Internal method that reads and parses the directory entries of a block
+        in the filesystem. It adds DirectoryEntry objects to the list of files
+        of the current Directory object.
+        """
 
-        raw_block = self.filesystem._read_record(block_number, block_size)
-        offset = 0
-        # let's read the directory entries (the last valid entry points to the end of the block)
+        raw_block = self.filesystem.read_block(block_number)
+
+        offset = 0 # this variable will store the starting address of each directory entry
+        block_size = self.filesystem.superblock.s_log_block_size
+        # let's read and parse the directory entries (the last valid entry points to the end of the block)
         while offset < block_size:
             dx = offset + DENTRY_STRUCT_BASE_SIZE
-            file = directory_entry.DirectoryEntry(raw_block[offset:dx])
-            file.name = raw_block[dx:dx+file.name_len]
+            file = directory_entry.DirectoryEntry(raw_block[offset:dx]) # we parse the first 8 bytes (the constant part of the dentry).
+            file.name = raw_block[dx:dx+file.name_len] # and now the rest, corresponding to the name (the variable part).
             if file.inode != 0:
                 # This happens only if the first file is deleted;
                 # all other deleted file entries will be skipped due to
@@ -82,26 +89,25 @@ class Directory:
                 self.files.append(file)
             offset += file.rec_len
 
-    def _read_indirect_1_dentries(self, block_number, block_size):
-
-        raw_indirect_1_block = self.filesystem._read_record(block_number, block_size)
+    def _read_indirect_1_dentries(self, block_number):
+        raw_indirect_1_block = self.filesystem.read_block(block_number)
         indirect_1_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_1_block) if pointer[0] != 0]
         # There may be unallocated blocks yet (pointers to 0), so we will only keep those pointers that do not equal to null (0).
         for p in indirect_1_block:
-            self._read_dentries(p, block_size)
+            self._read_dentries(p) # we read the directory entries contained in the block pointed to by the pointer 'p'.
 
-    def _read_indirect_2_dentries(self, block_number, block_size):
-        raw_indirect_2_block = self.filesystem._read_record(block_number, block_size)
+    def _read_indirect_2_dentries(self, block_number):
+        raw_indirect_2_block = self.filesystem.read_block(block_number)
         indirect_2_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_2_block) if pointer[0] != 0]
         for p in indirect_2_block:
-            self._read_indirect_1_dentries(p, block_size)
+            self._read_indirect_1_dentries(p)
 
-    def _read_indirect_3_dentries(self, block_number, block_size):
-        raw_indirect_3_block = self.filesystem._read_record(block_number, block_size)
+    def _read_indirect_3_dentries(self, block_number):
+        raw_indirect_3_block = self.filesystem.read_block(block_number)
         # how much power in a single line of code! it's beautiful, Python at its best!
         indirect_3_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_3_block) if pointer[0] != 0]
         for p in indirect_3_block:
-            self._read_indirect_2_dentries(p, block_size)
+            self._read_indirect_2_dentries(p)
 
 
     def _parse(self):
@@ -114,23 +120,23 @@ class Directory:
         # let's read the direct blocks
         while i != directory_blocks and i < 12:
             block_number = self.inode_obj.i_block[i]
-            self._read_dentries(block_number, block_size)
+            self._read_dentries(block_number)
             i += 1
         
         # and now the indirect blocks
         while i != directory_blocks and i < 13:
             block_number = self.inode_obj.i_block[i]
-            self._read_indirect_1_dentries(block_number, block_size)
+            self._read_indirect_1_dentries(block_number)
             i += 1
 
         while i != directory_blocks and i < 14:
             block_number = self.inode_obj.i_block[i]
-            self._read_indirect_2_dentries(block_number, block_size)
+            self._read_indirect_2_dentries(block_number)
             i += 1
 
         while i != directory_blocks and i < 15:
             block_number = self.inode_obj.i_block[i]
-            self._read_indirect_3_dentries(block_number, block_size)
+            self._read_indirect_3_dentries(block_number)
             i += 1
 
 
@@ -192,9 +198,10 @@ class Ext2:
         block_group_count = ceil(useful_blocks / self.superblock.s_blocks_per_group) # (*)
         self.group_descriptors = [group_descriptor.GroupDescriptor(self.handle.read(GD_STRUCT_SIZE)) for i in range(block_group_count)]
 
-        # The root directory always corresponds to inode No. 2 (inode [1]), which belongs to block group No. 1 (bg [0])
-        it_block = self.group_descriptors[0].bg_inode_table
-        raw_root_inode_entry = self._read_record(it_block, INODE_STRUCT_SIZE, offset=INODE_STRUCT_SIZE)
+        # The root directory always corresponds to inode No. 2 (inode_table[1]), which belongs to block group No. 1 (bg[0]).
+        # (note: I don't use the 'read_inode' method cause for me in this case it is more descriptive to see the read_record's arguments)
+        inode_table_block = self.group_descriptors[0].bg_inode_table
+        raw_root_inode_entry = self.read_record(inode_table_block, INODE_STRUCT_SIZE, offset=INODE_STRUCT_SIZE)
         root_inode = inode.Inode(raw_root_inode_entry)
         self.root = Directory(self, root_inode, name=self.superblock.s_volume_name)
 
@@ -219,7 +226,7 @@ class Ext2:
                 f"{self.superblock}>\n"
             )
 
-    def _read_record(self, block_number, length, offset=0):
+    def read_record(self, block_number, length, offset=0):
         """
         Method that reads a certain amount of bytes (length) from a given block
         of the filesystem (block_number), starting from an offset (by default 0).
@@ -229,6 +236,35 @@ class Ext2:
         self.handle.seek(self.base_address)
         self.handle.read(address + offset) # por alguna razon, el 'seek' me tira error, entonces lo cambié por 'read'.
         return self.handle.read(length)
+
+    def read_block(self, block_number):
+        """
+        Method that reads a block from the filesystem (block_number >= 0).
+        """
+        block_size = self.superblock.s_log_block_size
+        address = block_number*block_size
+        self.handle.seek(self.base_address)
+        self.handle.read(address) # por alguna razon, el 'seek' me tira error, entonces lo cambié por 'read'.
+        raw_block = self.handle.read(block_size)
+        return raw_block
+
+    def read_inode(self, inode_number):
+        """
+        Method that reads an inode from the filesystem (inode_number >= 1).
+        Attention! Unlike block numbering, the inodes start to be numbered from 1,
+        since inode number 0 indicates 'null inode' (so the first entry in
+        the inode table 'inode_table[0]', corresponds to inode 1 and not inode 0).
+        """
+        if inode_number < 1:
+            raise TypeError("the inode number must be >= 1 !")
+        # locating the inode
+        block_group = (inode_number - 1) // self.superblock.s_inodes_per_group
+        first_inode_table_block = self.group_descriptors[block_group].bg_inode_table
+        local_inode_index = (inode_number - 1) % self.superblock.s_inodes_per_group
+        # and now we read it
+        raw_inode = self.read_record(first_inode_table_block, INODE_STRUCT_SIZE, offset=local_inode_index*INODE_STRUCT_SIZE)
+        return raw_inode
+
 
     def open(self, path):
         """
@@ -254,13 +290,9 @@ class Ext2:
                     # (todo lo demas deben ser directorios)
                     raise FileNotFoundError(f"{obj.path} is not a Directory!") # we will see this exception by console.
                 if name in files: # verificamos que el nombre de directorio/archivo buscado esté en un directory entry del directorio padre.
-                    # Locating the inode
+                    # We locate, read and parse the inode
                     inode_number = files[name]
-                    block_group = (inode_number - 1) // self.superblock.s_inodes_per_group
-                    first_inode_table_block = self.group_descriptors[block_group].bg_inode_table
-                    local_inode_index = (inode_number - 1) % self.superblock.s_inodes_per_group
-                    # and now we read it
-                    raw_inode = self._read_record(first_inode_table_block, INODE_STRUCT_SIZE, offset=local_inode_index*INODE_STRUCT_SIZE)
+                    raw_inode = self.read_inode(inode_number)
                     inode_obj = inode.Inode(raw_inode)
                     # and we instantiate the directory or file as of the inode that represents it.
                     if inode_obj.i_mode[0] == 'd': # Maybe this way of checking the file type needs to be improved.
