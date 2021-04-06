@@ -1,10 +1,9 @@
 # Cosas a revisar:
 #  - Cuando calculo block_group_count, redondeo al entero superior (*) porque al parecer el espacio libre del final de la particion
 #    queda asignado a un 'block group' más, pero que obviamente no respeta tener 'superblock.s_blocks_per_group' bloques, sino menos.
-#  - Quizas todos los calculos referidos a la cantidad de grupos de bloques, deberian ir en la clase Superblock.
-#  - No puedo leer de una la tabla de descriptores de grupo, ya que si el tamaño de bloque son 4k, hay 2048 bytes libres y recien ahi
-#    empieza la tabla (generalizando, la tabla comienza en el BLOQUE SIGUIENTE al del superbloque).
-#  - Cuando hago un seek muy grande, me da error.
+#  - Quizas todos los calculos referidos a la cantidad de grupos de bloques, deberian ir en la clase Superblock
+#    (por lo que hago en el __str__ y en las 2 lineas previas a armar la lista de descriptores de grupos).
+#  - Cuando hago un seek o un read muy grande, me da error (onda, moverse de a gigas). IMPORTANTE.
 #  - Quizás haya que mejorar la forma de verificar el tipo de archivo (en 'Ext2.open()')
 #  - Falta el manejo de archivos de datos como tal, o sea, buscar un archivo y leer sus binarios
 #    (quizas sea una estructura parecida a la de Directory)
@@ -194,7 +193,8 @@ class Ext2:
         # the next 1024 bytes correspond to the original superblock (we are already within block group 0).
         self.superblock = superblock.Superblock(self.handle.read(SB_STRUCT_SIZE))
         # and then there will be as many group descriptors as there are block groups in the filesystem.
-        useful_blocks = self.superblock.s_blocks_count - self.superblock.s_first_data_block
+        self.handle.seek(self.base_address + self.superblock.s_log_block_size * (self.superblock.s_first_data_block + 1)) # the group descriptor table begins at the block following the superblock
+        useful_blocks = self.superblock.s_blocks_count - self.superblock.s_first_data_block # if block_size=1K, the first block doesn't belong to the first block_group
         block_group_count = ceil(useful_blocks / self.superblock.s_blocks_per_group) # (*)
         self.group_descriptors = [group_descriptor.GroupDescriptor(self.handle.read(GD_STRUCT_SIZE)) for i in range(block_group_count)]
 
