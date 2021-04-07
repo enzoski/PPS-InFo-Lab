@@ -1,6 +1,7 @@
 # Cosas a revisar:
 #  - Cuando calculo block_group_count, redondeo al entero superior (*) porque al parecer el espacio libre del final de la particion
 #    queda asignado a un 'block group' más, pero que obviamente no respeta tener 'superblock.s_blocks_per_group' bloques, sino menos.
+#    (igualmente esto es más a modo de comentario, así como lo hice funciona como quería, no creo que haya que cambiar la lógica)
 #  - Quizas todos los calculos referidos a la cantidad de grupos de bloques, deberian ir en la clase Superblock
 #    (por lo que hago en el __str__ y en las 2 lineas previas a armar la lista de descriptores de grupos).
 #  - Cuando hago un seek o un read muy grande, me da error (onda, moverse de a gigas). IMPORTANTE.
@@ -158,12 +159,106 @@ class Directory:
 
 
 class FileHandle:
-    """docstring for FileHandle"""
+    """
+    Clase que maneja a un archivo de datos, dado su inodo que lo representa.
+    Contará con las operaciones básicas de un archivo: read, write, seek, close...
+    (el 'open' estaría implementado en la clase Ext2, ya que justamente nos devuelve
+    este objeto FileHandle, como cuando hacemos un verdadero open en Python u otro lenguaje).
+    Por el momento, solo estará implementado el 'read'.
+    """
     def __init__(self, filesystem, inode_obj, name=b'', parent=None):
         
         self.filesystem = filesystem
         self.inode_obj = inode_obj
         self.name = name
+
+        if parent is None:
+            self.path = self.name.decode(ENCODING) # para la raiz, 'name' va a ser el 'volume_name'.
+        else:
+            self.path = parent.path + '/' + self.name.decode(ENCODING)
+
+        self.closed = False
+
+        # Siempre iremos manteniendo los bytes del archivo en un 'buffer',
+        # de a 1 bloque por vez (comenzando con su primer bloque)
+        self._buffer      = self.filesystem.read_block(self.inode_obj.i_block[0])
+        self._buffer_pos  = 0 # 0 <= pos < buffer_size
+        self._buffer_size = self.filesystem.superblock.s_log_block_size
+
+        # Guardamos el número del puntero del ultimo bloque 'buffereado',
+        # para que en la siguiente lectura del archivo, sepamos donde nos quedamos.
+        self._current_block_pointer = 0
+
+        # position in the file (pointer to the byte number), .tell() returns this
+        self._file_pos = 0 # 0 <= pos < self.inode_obj.i_size
+
+    def __repr__(self):
+        return f"< FileHandle for {self.path}>"
+    
+    def __str__(self):
+        return self.__repr__()
+
+    def close(self):
+        """
+        Closes the file.
+        """
+        self.closed = True
+
+    def read(self, size=-1):
+        """
+        Método que lee una cierta cantidad de bytes (size) del archivo al que
+        hace referencia el objeto FileHandle (siempre y cuando el archivo esté 'abierto').
+        Si se omite el argumento 'size', se leerá la totalidad del archivo
+        (o lo que reste de él segun su posicion del puntero).
+        """
+        if self.closed == True:
+            raise ValueError("I/O operation on closed file.")
+
+        if size < 0: # indicaría que queremos leer lo que reste del archivo.
+            size = self.inode_obj.i_size - self._file_pos # file length in bytes - current position of the file pointer.
+
+        ret = [] # acá iremos guardando las cadenas de bytes que leamos del buffer, y al final uniremos todo.
+
+        # let's read the direct blocks
+        while size > (self._buffer_size - self._buffer_pos) and self._current_block_pointer+1 < 12:
+            ret.append(self._buffer[self._buffer_pos:]) # acá arrancamos de 'buffer_pos' por si primero se leyó poquito (y no se entró a este while), y luego mucho (y sí se entró).
+            size           -= self._buffer_size - self._buffer_pos # vamos restando de 'size' la cantidad de bytes que ya leimos.
+            self._file_pos += self._buffer_size - self._buffer_pos # vamos avanzando el puntero del archivo a medida que leemos.
+            self._buffer_pos = 0 # como consumimos la totalidad del buffer, seteamos su posicion en 0.
+            next_block_pointer = self._current_block_pointer + 1
+            next_block_number = self.inode_obj.i_block[next_block_pointer]
+            if next_block_number == 0: # creeria que no hay huecos entre bloques asignados, por ende cuando llegue al primer bloque sin asignar aun (puntero nulo), significa fin de archivo.
+                break
+            self._buffer = self.filesystem.read_block(next_block_number) # leemos el siguiente bloque de datos y lo guardamos en el buffer.
+            self._current_block_pointer = next_block_pointer
+
+        # cuando lleguemos acá, querrá decir que 'size' es más chico que el tamaño del buffer (bloque)
+        span = min(self.inode_obj.i_size - self._file_pos, size) # esto lo hacemos para evitar leer del buffer mas bytes que los restantes del archivo.
+        ret.append(self._buffer[self._buffer_pos:self._buffer_pos+span]) # leemos los x ('span') bytes del buffer
+        self._buffer_pos += span # y movemos los punteros/posiciones tanto del buffer como del archivo.
+        self._file_pos   += span # (no habrá problemas de desbordamientos porque span siempre será mas chico que el tamaño de bloque)
+        return b"".join(ret)
+
+            # Tengo que ver qué hacer si se intenta leer más bytes que los que tiene el archivo. HECHO
+            # (se resuelve checkeando dentro del while que el siguiente bloque apuntado no sea 0/nulo)
+            # (y luego cuando salga del while, o directamente no entre, nos aseguramos de leer lo justo y necesario, con la variable 'span')
+            # (y realmente, Python no tira error, sino que lee hasta donde haya bytes y listo. Y si luego seguimos queriendo leer, nos devuelve '' vacío)
+            
+            # Y tambien qué pasaria si voy leyendo de a pocos bytes, cosa de no entrar en los while,
+            # y llega un momento que me paso del tamaño de bloque, ya que necesitaria leer el siguiente. HECHO
+            # (esto se soluciona con el chekeo del while '(self._buffer_size - self._buffer_pos)',
+            # gracias a la posicion del puntero sabremos cuándo será necesario pasar al siguiente bloque,
+            # y en esos casos se entra al while, ya que 'size' sí será mayor que esa diferencia)
+
+            # Tendria que revisar qué pasa si ya lei la totalidad del archivo, y quiero leer una cantidad tan grande que
+            # entre al while, porque ahí haría un append de más.
+
+    def tell(self):
+        """
+        Returns the current position of the file pointer.
+        """
+        return self._file_pos
+
         
 
 class Ext2:
@@ -235,7 +330,7 @@ class Ext2:
         address = block_number*block_size
         self.handle.seek(self.base_address)
         self.handle.read(address + offset) # por alguna razon, el 'seek' me tira error, entonces lo cambié por 'read'.
-        return self.handle.read(length)
+        return self.handle.read(length)    # ¿¿ PODRÍA HACER UN for in range(block_number) COSA DE IR HACIENDO SEEK'S DE A 1 BLOQUE ??
 
     def read_block(self, block_number):
         """
