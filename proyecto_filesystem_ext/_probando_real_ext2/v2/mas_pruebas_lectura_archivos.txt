@@ -1,0 +1,481 @@
+Microsoft Windows [Versión 10.0.19041.867]
+(c) 2020 Microsoft Corporation. Todos los derechos reservados.
+
+C:\WINDOWS\system32>cd C:\Users\Enzo\Desktop\asd
+
+C:\Users\Enzo\Desktop\asd>python
+Python 3.9.1 (tags/v3.9.1:1e5d33e, Dec  7 2020, 17:08:21) [MSC v.1927 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+>>> import ext2
+>>> particion_pendrive = ext2.Ext2(r"\\.\PhysicalDrive1", 2048*512)    // AGREGUÉ ARCHIVOS NUEVOS AL PENDRIVE
+>>>
+>>> particion_pendrive
+< ext2 @ 1048576 of \\.\PhysicalDrive1>
+
+>>> print(particion_pendrive)
+< ext2 Filesystem:
+Number of block groups:                          957 (the last one has 2047 blocks assigned)
+Total number of inodes:                          1959936
+Filesystem size in blocks:                       7833600
+Number of reserved blocks:                       391680
+Free blocks counter:                             7580959 // COMO AGREGUÉ 2 DIRECTORIOS Y 5 ARCHIVOS, DISMINUYÓ ESTE CONTADOR
+Free inodes counter:                             1959911 // Y ESTE
+Number of first useful block:                    1
+Block size:                                      1024
+Fragment size:                                   1024
+Number of blocks per group:                      8192
+Number of fragments per group:                   8192
+Number of inodes per group:                      2048
+Time of last mount operation:                    2021-04-07 23:10:40+00:00
+Time of last write operation:                    2021-04-07 23:25:45+00:00
+Mount operations counter:                        2 // 1 MONTAJE MÁS
+Magic signature:                                 0xef53
+Status flag:                                     the filesystem was cleanly unmounted
+Time of last check:                              2021-03-01 19:48:38+00:00
+Time between checks:                             1970-06-30 00:00:00+00:00
+OS where filesystem was created:                 Linux
+Number of first nonreserved inode:               11
+Size of on-disk inode structure:                 128
+Block group number of this superblock:           0
+Filesystem identifier:                           (223-188-218-4-237-14-215-1-192-184-218-4-237-14-215-1)
+Volume name:                                     pendrive_ext2
+Pathname of last mount point:                    /mnt/sdc1
+Number of blocks to preallocate:                 0
+Number of blocks to preallocate for directories: 0
+>
+
+>>> print(particion_pendrive.group_descriptors[0]) // QUEDÓ INTACTO (ver al final la explicación)
+Block number of block bitmap:            32
+Block number of inode bitmap:            33
+Block number of first inode table block: 34
+Number of free blocks in the group:      5006
+Number of free inodes in the group:      2030
+Number of directories in the group:      2
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+>>>
+>>> arch_1 = particion_pendrive.open("/archivos de texto/texto-simple.txt")
+>>>
+>>> arch_1.tell()
+0
+>>> contenido_1 = arch_1.read(0) // PRUEBA DE NO LEER NADA
+>>> contenido_1
+b''
+>>> arch_1.tell()
+0
+>>> contenido_1 = arch_1.read(8) // PRUEBA DE LEER X BYTES
+>>> contenido_1
+b'holaaaa\n'
+>>>
+>>> arch_1.tell() // POSICION DEL PUNTERO
+8
+>>> contenido_2 = arch_1.read() // PRUEBA DE LEER LO QUE RESTE DEL ARCHIVO
+>>> contenido_2
+b'probando 123\nenzo'
+>>>
+>>> print(contenido_1.decode('latin-1'))
+holaaaa
+
+>>> print(contenido_2.decode('latin-1'))
+probando 123
+enzo
+>>> print(contenido_1.decode('latin-1') + contenido_2.decode('latin-1'))
+holaaaa
+probando 123
+enzo
+>>>
+>>> arch_1.tell() // PUNTERO AL FINAL DE LEER TODO
+25
+>>>
+>>> arch_1.close()
+>>>
+>>> arch_1.read() // PRUEBA DE LEER UN ARCHIVO CERRADO
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Desktop\asd\ext2.py", line 217, in read
+    raise ValueError("I/O operation on closed file.")
+ValueError: I/O operation on closed file.
+>>>
+>>> print(dir_textos)
+< Directory pendrive_ext2/archivos de texto >
+----------FILES----------
+. (Directory)
+.. (Directory)
+texto-simple.txt (Regular file)
+mas archivos (Directory)
+-------------------------
+
+>>> dir_mas_textos = particion_pendrive.open("/archivos de texto/mas archivos") // ABRIMOS UN SUB-DIRECTORIO MÁS
+>>> dir_mas_textos
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+>>> print(dir_mas_textos)
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+----------FILES----------
+. (Directory)
+.. (Directory)
+texto-8k.txt (Regular file)
+texto-4k.txt (Regular file)
+texto-2k.txt (Regular file)
+texto-1k.txt (Regular file)
+-------------------------
+
+>>> print(dir_mas_textos.show_dentries())
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+----DIRECTORY-ENTRIES----
+Inode number:           247810
+Directory entry length: 12
+Filename length:        1
+File type:              Directory
+Filename:               .
+
+Inode number:           247809
+Directory entry length: 12
+Filename length:        2
+File type:              Directory
+Filename:               ..
+
+Inode number:           247812
+Directory entry length: 20
+Filename length:        12
+File type:              Regular file
+Filename:               texto-8k.txt
+
+Inode number:           247813
+Directory entry length: 20
+Filename length:        12
+File type:              Regular file
+Filename:               texto-4k.txt
+
+Inode number:           247814
+Directory entry length: 20
+Filename length:        12
+File type:              Regular file
+Filename:               texto-2k.txt
+
+Inode number:           247815
+Directory entry length: 940
+Filename length:        12
+File type:              Regular file
+Filename:               texto-1k.txt
+
+-------------------------
+
+>>> print(dir_mas_textos.show_inode())
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+----ASSOCIATED INODE-----
+File type and access rights:                  drwxr-xr-x
+Owner identifier:                             0
+File length in bytes:                         1024 //ASUMO QUE LOS DIRECTORIOS SIEMPRE TIENEN TAMAÑOS MULTIPLOS DE BLOQUE (ya que el ultimo directory entry "ocupa" todo lo que reste del bloque)
+Time of last file access:                     2021-04-07 20:16:29
+Time that inode last changed (file creation): 2021-04-07 20:16:45
+Time that file contents last changed:         2021-04-07 20:16:45
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           2
+Number of data blocks of the file:            2 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [991492, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+-------------------------
+
+>>> arch_2 = particion_pendrive.open("/archivos de texto/mas archivoss") // PRUEBA DE ARCHIVO/DIRECTORIO NO ENCONTRADO
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Desktop\asd\ext2.py", line 402, in open
+    raise FileNotFoundError(f"No such file or directory {obj.path}/{name.decode(ENCODING)}")
+FileNotFoundError: No such file or directory pendrive_ext2/archivos de texto/mas archivoss
+>>>
+>>> arch_2 = particion_pendrive.open("/archivos de texto/texto-simple.txt/mas archivos/texto-4k.txt") // PRUEBA DE ARCHIVO (real) EN MEDIO DEL PATH
+Traceback (most recent call last):
+  File "C:\Users\Enzo\Desktop\asd\ext2.py", line 385, in open
+    files = {f.name:f.inode for f in obj.files}
+AttributeError: 'FileHandle' object has no attribute 'files'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Desktop\asd\ext2.py", line 390, in open
+    raise FileNotFoundError(f"{obj.path} is not a Directory!") # we will see this exception by console.
+FileNotFoundError: pendrive_ext2/archivos de texto/texto-simple.txt is not a Directory!
+>>>
+>>> arch_2 = particion_pendrive.open("/archivos de texto/mas archivos/texto-4k.txt") // PRUEBA DE ABRIR UN ARCHIVO DE 4KB
+>>>
+>>> len(arch_2)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: object of type 'FileHandle' has no len()
+>>>
+>>> arch_2.tell()
+0
+>>>
+>>> cont1 = arch_2.read(1500)
+>>>
+>>> arch_2.tell()
+1500
+>>>
+>>> cont2 = arch_2.read()
+>>>
+>>> arch_2.tell()
+4096
+>>>
+>>> arch_2.read()
+b''
+>>> arch_2.read(123)
+b''
+>>> arch_2.read(15000000) // ESTO HABRIA QUE ARREGLARLO, COMO LA CANT. DE BYTES ES TAN GRANDE, ENTRA IGUALMENTE AL 'while' AUNQUE YA SE LEYÓ TODO EL ARCHIVO.
+b'a\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+>>>
+>>> len(cont1)
+1500
+>>> len(cont2)
+2596
+>>>
+>>> cont1
+b'holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+>>>
+>>> cont2
+b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+>>>
+>>> len(cont1+cont2)
+4096
+>>> print(cont1.decode('latin-1'))
+holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+>>>
+>>>
+>>>
+>>> print(particion_pendrive)
+< ext2 Filesystem:
+Number of block groups:                          957 (the last one has 2047 blocks assigned)
+Total number of inodes:                          1959936
+Filesystem size in blocks:                       7833600
+Number of reserved blocks:                       391680
+Free blocks counter:                             7580959
+Free inodes counter:                             1959911
+Number of first useful block:                    1
+Block size:                                      1024
+Fragment size:                                   1024
+Number of blocks per group:                      8192
+Number of fragments per group:                   8192
+Number of inodes per group:                      2048
+Time of last mount operation:                    2021-04-07 23:10:40+00:00
+Time of last write operation:                    2021-04-07 23:25:45+00:00
+Mount operations counter:                        2
+Magic signature:                                 0xef53
+Status flag:                                     the filesystem was cleanly unmounted
+Time of last check:                              2021-03-01 19:48:38+00:00
+Time between checks:                             1970-06-30 00:00:00+00:00
+OS where filesystem was created:                 Linux
+Number of first nonreserved inode:               11
+Size of on-disk inode structure:                 128
+Block group number of this superblock:           0
+Filesystem identifier:                           (223-188-218-4-237-14-215-1-192-184-218-4-237-14-215-1)
+Volume name:                                     pendrive_ext2
+Pathname of last mount point:                    /mnt/sdc1
+Number of blocks to preallocate:                 0
+Number of blocks to preallocate for directories: 0
+>
+
+>>> print(particion_pendrive.group_descriptors[0])
+Block number of block bitmap:            32
+Block number of inode bitmap:            33
+Block number of first inode table block: 34
+Number of free blocks in the group:      5006
+Number of free inodes in the group:      2030
+Number of directories in the group:      2 // ME PARECIÓ CURIOSO QUE NO ESTEN ACA LOS 2 NUEVOS DIRECTORIOS QUE AGREGUÉ (los de 'textos')
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+>>> print(particion_pendrive.group_descriptors[1])
+Block number of block bitmap:            8224
+Block number of inode bitmap:            8225
+Block number of first inode table block: 8226
+Number of free blocks in the group:      6450
+Number of free inodes in the group:      2048
+Number of directories in the group:      0 // NI EN LOS SIGUIENTES GRUPOS DE BLOQUES
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+>>> print(particion_pendrive.group_descriptors[2])
+Block number of block bitmap:            16385
+Block number of inode bitmap:            16386
+Block number of first inode table block: 16387
+Number of free blocks in the group:      7033 // COMO CURIOSIDAD, SI SEGUIMOS MOSTRANDO LOS DESCRIPTORES DE GRUPO SIGUIENTES*
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+// * SE ALTERNARÁ EL NÚMERO DE BLOQUES LIBRES ENTRE 2 VALORES, ESTO ES DEBIDO A QUE NO TODOS LOS GRUPOS TIENEN AL SUPERBLOQUE Y A LA TABLA DE DESCRIPTORES DE GRUPO
+
+>>>
+>>> print(directorio_raiz.show_dentries())
+< Directory pendrive_ext2 >
+----DIRECTORY-ENTRIES----
+Inode number:           2 //ESTOS 2 PRIMEROS DIRECTORIOS CUENTAN COMO 1, YA QUE APUNTAN AL MISMO INODO
+Directory entry length: 12
+Filename length:        1
+File type:              Directory
+Filename:               .
+
+Inode number:           2
+Directory entry length: 12
+Filename length:        2
+File type:              Directory
+Filename:               ..
+
+Inode number:           11 // Y ESTE SERIA EL SEGUNDO DIRECTORIO DEL 1er BLOQUE DE GRUPOS
+Directory entry length: 20
+Filename length:        10
+File type:              Directory
+Filename:               lost+found
+
+Inode number:           12
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-35-56.png
+
+Inode number:           13
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-36-35.png
+
+Inode number:           14
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-38-58.png
+
+Inode number:           15
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-45-02.png
+
+Inode number:           16
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-54-03.png
+
+Inode number:           17
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-55-01.png
+
+Inode number:           18
+Directory entry length: 56
+Filename length:        18
+File type:              Regular file
+Filename:               comando-ls-a-l.png
+
+Inode number:           247809 // ACÁ ESTÁ EL TEMA DE LOS 2 NUEVOS DIRECTORIOS, SE RECONTRA DISPARÓ EL N° DE INODO, NO SE BIEN POR QUÉ
+Directory entry length: 588
+Filename length:        17
+File type:              Directory
+Filename:               archivos de texto
+
+-------------------------
+
+>>> bg_archivos_texto = 247809//2048 // ENTONCES FUI A BUSCAR EN QUÉ GRUPO DE BLOQUES ESTABA ESE DIRECTORIO
+>>>
+>>> print(particion_pendrive.group_descriptors[bg_archivos_texto-1])
+Block number of block bitmap:            983041
+Block number of inode bitmap:            983042
+Block number of first inode table block: 983043
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+>>> print(particion_pendrive.group_descriptors[bg_archivos_texto])
+Block number of block bitmap:            991233
+Block number of inode bitmap:            991234
+Block number of first inode table block: 991235
+Number of free blocks in the group:      7916
+Number of free inodes in the group:      2041
+Number of directories in the group:      2 // ESTABA EN ESTE, QUE CONTIENE A LOS 2 NUEVOS DIRECTORIOS
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+>>>
+>>> print(dir_textos.show_dentries())
+< Directory pendrive_ext2/archivos de texto >
+----DIRECTORY-ENTRIES----
+Inode number:           247809 // ESTE
+Directory entry length: 12
+Filename length:        1
+File type:              Directory
+Filename:               . // DIRECTORIO ACTUAL
+
+Inode number:           2 // ESTE NO CUENTA COMO DIRECTORIO DE ESTE GRUPO, PORQUE PERTENECE al 1°.
+Directory entry length: 12
+Filename length:        2
+File type:              Directory
+Filename:               .. // DIRECTORIO PADRE (en este caso, la raiz)
+
+Inode number:           247811
+Directory entry length: 28
+Filename length:        16
+File type:              Regular file
+Filename:               texto-simple.txt
+
+Inode number:           247810 // Y ESTE
+Directory entry length: 972
+Filename length:        12
+File type:              Directory
+Filename:               mas archivos
+
+-------------------------
+
+>>> print(dir_mas_textos.show_dentries())
+< Directory pendrive_ext2/archivos de texto/mas archivos > // ACÁ MUESTRO LOS DIRECTORY ENTRIES DEL OTRO DIRECTORIO
+----DIRECTORY-ENTRIES----
+Inode number:           247810
+Directory entry length: 12
+Filename length:        1
+File type:              Directory
+Filename:               .
+
+Inode number:           247809
+Directory entry length: 12
+Filename length:        2
+File type:              Directory
+Filename:               ..
+
+Inode number:           247812
+Directory entry length: 20
+Filename length:        12
+File type:              Regular file
+Filename:               texto-8k.txt
+
+Inode number:           247813
+Directory entry length: 20
+Filename length:        12
+File type:              Regular file
+Filename:               texto-4k.txt
+
+Inode number:           247814
+Directory entry length: 20
+Filename length:        12
+File type:              Regular file
+Filename:               texto-2k.txt
+
+Inode number:           247815
+Directory entry length: 940
+Filename length:        12
+File type:              Regular file
+Filename:               texto-1k.txt
+
+-------------------------
+
+>>>
