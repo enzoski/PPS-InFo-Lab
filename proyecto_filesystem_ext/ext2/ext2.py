@@ -1,3 +1,5 @@
+# For the future: implement the writing capability, and the parser of the ext3's journal.
+
 # Cosas a revisar:
 #  - Cuando calculo block_group_count, redondeo al entero superior (*) porque al parecer el espacio libre del final de la particion
 #    queda asignado a un 'block group' más, pero que obviamente no respeta tener 'superblock.s_blocks_per_group' bloques, sino menos.
@@ -187,6 +189,8 @@ class FileHandle:
 
         # Guardamos el número del puntero del ultimo bloque 'buffereado',
         # para que en la siguiente lectura del archivo, sepamos donde nos quedamos.
+        # (recordemos que implementaremos un verdadero 'read', o sea podremos ir leyendo
+        #  un archivo en diferentes ocasiones y se irá desplazando el puntero a los bytes)
         self._current_block_pointer = 0
 
         # position in the file (pointer to the byte number), .tell() returns this
@@ -202,7 +206,12 @@ class FileHandle:
         """
         Closes the file.
         """
+        if self.closed == True:
+            raise ValueError("I/O operation on closed file.")
+
         self.closed = True
+
+        return True
 
     def read(self, size=-1):
         """
@@ -227,7 +236,9 @@ class FileHandle:
             self._buffer_pos = 0 # como consumimos la totalidad del buffer, seteamos su posicion en 0.
             next_block_pointer = self._current_block_pointer + 1
             next_block_number = self.inode_obj.i_block[next_block_pointer]
-            if next_block_number == 0: # creeria que no hay huecos entre bloques asignados, por ende cuando llegue al primer bloque sin asignar aun (puntero nulo), significa fin de archivo.
+            if next_block_number == 0:
+                # creeria que no hay huecos entre bloques asignados a un archivo (respecto a los punteros del inodo),
+                # por ende, cuando llegue al primer bloque sin asignar aún (puntero nulo), significa fin de archivo (ya leimos todos sus bloques).
                 break
             self._buffer = self.filesystem.read_block(next_block_number) # leemos el siguiente bloque de datos y lo guardamos en el buffer.
             self._current_block_pointer = next_block_pointer
@@ -251,15 +262,29 @@ class FileHandle:
             # y en esos casos se entra al while, ya que 'size' sí será mayor que esa diferencia)
 
             # Tendria que revisar qué pasa si ya lei la totalidad del archivo, y quiero leer una cantidad tan grande que
-            # entre al while, porque ahí haría un append de más.
+            # entra al while, porque ahí haría un append de más con lo que quedó en el buffer.
+            # (en efecto, pasa eso, nos muestra lo ultimo que quedo del buffer sin 'supuestamente' leer.
+            #  de todas formas luego sale del while por el break, ya que realmente no hay mas bloques para leer
+            #  y luego como tanto 'span' como 'buffer_pos' quedan en 0, no hay problema con los punteros '_pos'.
+            #  Igualmente creo que debería arreglarlo.)
 
     def tell(self):
         """
         Returns the current position of the file pointer.
         """
+        if self.closed == True:
+            raise ValueError("I/O operation on closed file.")
+
         return self._file_pos
 
-        
+    # un extra, para curosear.
+    def show_inode(self):
+        ret = f"< File {self.path} >\n"
+        ret += "----ASSOCIATED INODE-----\n"
+        ret += f"{str(self.inode_obj)}"
+        ret += "-------------------------\n"
+        return ret
+
 
 class Ext2:
     """
@@ -272,7 +297,7 @@ class Ext2:
     """
     def __init__(self, path, base_address):
         """
-        The storage device opens.
+        The storage device is opened.
         The byte pointer is positioned at the beginning of the desired partition.
         And the boot area, the superblock (original), the group descriptor table
         (original) and the root inode, are read.
