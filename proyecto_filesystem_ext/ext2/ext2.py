@@ -7,6 +7,7 @@
 #  - Quizas todos los calculos referidos a la cantidad de grupos de bloques, deberian ir en la clase Superblock
 #    (por lo que hago en el __str__ y en las 2 lineas previas a armar la lista de descriptores de grupos).
 #  - Cuando hago un seek o un read muy grande, me da error (onda, moverse de a gigas). IMPORTANTE.
+#    (los unicos 'seeks' que quizas alguna vez fallen, son los 'seek(base_address)', en los casos que 'base_address' sea enorme)
 #  - Quizás haya que mejorar la forma de verificar el tipo de archivo (en 'Ext2.open()')
 #  - Falta el manejo de archivos de datos como tal, o sea, buscar un archivo y leer sus binarios
 #    (quizas sea una estructura parecida a la de Directory)
@@ -117,6 +118,15 @@ class Directory:
         block_size = self.filesystem.superblock.s_log_block_size
         directory_blocks = (self.inode_obj.i_blocks*512) / block_size
 
+        # con 'directory_blocks' lograremos leer los bloques justos y necesarios,
+        # y por lo tanto está asegurado que los punteros a esos bloques, no serán nulos (p -> 0).
+        # A PARTIR DE LOS BLOQUES INDIRECTOS, NO TIENE SENTIDO ESE CONTADOR.
+        # ENTONCES, PARA EVITAR LOS PUNTEROS A BLOQUES NULOS (Y EVITAR QUE SE LEA EL BLOQUE 0 -> BOOT AREA),
+        # PODRIA REEMPLAZAR ESE CONTADOR, POR PONER DENTRO DEL WHILE: if block_number == 0: break
+        # Y YA CUANDO NOS ADENTREMOS EN LOS BLOQUES INDIRECTOS, NO HABRA PROBLEMA DE 0's PORQUE LOS FILTRO CON LA LISTA
+        # ADEMAS, CON QUE LOS PUNTEROS DEL INODO SEAN !=0, MINIMAMENTE HABRA UNA SECUENCIA DE PUNTEROS NO NULOS Y NO HABRÁ PROBLEMA.
+        # (por ejemplo, si puntero_inodo[14] != 0, quiere decir que minimo hay 1 bloque de datos válido al final de bloque_triple -> bloque_doble -> bloque_simple -> bloque_datos)
+
         i = 0
 
         # let's read the direct blocks
@@ -129,7 +139,7 @@ class Directory:
         while i != directory_blocks and i < 13:
             block_number = self.inode_obj.i_block[i]
             self._read_indirect_1_dentries(block_number)
-            i += 1
+            i += 1 # ESTOS CONTADORES ESTAN MAL ! EN LOS BLOQUES INDIRECTOS ESTARIAMOS RECORRIENDO (block_size ÷ 4bytes/puntero) BLOQUES DE DATOS, NO 1 SOLO !
 
         while i != directory_blocks and i < 14:
             block_number = self.inode_obj.i_block[i]
@@ -179,7 +189,7 @@ class FileHandle:
         else:
             self.path = parent.path + '/' + self.name.decode(ENCODING)
 
-        self.closed = False
+        self.closed = False # debería poner como 'privado' este atributo mediante properties.
 
         # Siempre iremos manteniendo los bytes del archivo en un 'buffer',
         # de a 1 bloque por vez (comenzando con su primer bloque)
@@ -192,15 +202,63 @@ class FileHandle:
         # (recordemos que implementaremos un verdadero 'read', o sea podremos ir leyendo
         #  un archivo en diferentes ocasiones y se irá desplazando el puntero a los bytes)
         self._current_block_pointer = 0
+        #self._current_indirect_1_block_pointer = 0
 
         # position in the file (pointer to the byte number), .tell() returns this
         self._file_pos = 0 # 0 <= pos < self.inode_obj.i_size
+
+        # Obtenemos de antemano todos los N° de bloque que conforman al archivo
+        # (igual no creo que sea lo mas eficiente, pero facilita mucho el método 'read')
+        # (cada bloque está referenciado por un puntero de 4 bytes)
+        # (por ejemplo, si la lista de numeros de bloques tiene 1.000.000 de elementos, tendremos 4 MB en memoria)
+        # (aca podemos ver diferentes tamaños máximo en bloques de archivos: https://www.nongnu.org/ext2-doc/ext2.html#def-blocks)
+        self._data_block_numbers = []
+        self._data_block_numbers = self._get_direct_blocks(self.inode_obj.i_block[0:12])
+        if self.inode_obj.i_block[12] != 0: # así evitamos leer el bloque '0' (que sería el boot area o boot area + superblock, dependiendo el block_size)
+            self._data_block_numbers += self._get_indirect_1_blocks(self.inode_obj.i_block[12])
+        if self.inode_obj.i_block[13] != 0:
+            self._data_block_numbers += self._get_indirect_2_blocks(self.inode_obj.i_block[13])
+        if self.inode_obj.i_block[14] != 0:
+            self._data_block_numbers += self._get_indirect_3_blocks(self.inode_obj.i_block[14])
+        # self._data_block_numbers.append(0) # para indicar 'fin de archivo' NO HARÍA FALTA POR LA SEGUNDA VERIFICACIÓN DEL WHILE.
 
     def __repr__(self):
         return f"< FileHandle for {self.path}>"
     
     def __str__(self):
         return self.__repr__()
+
+    def _get_direct_blocks(self, pointers): # PODRIA REAPROVECHAR ESTE ENFOQUE EN 'Directory' Y HACER UN for block in directory_block_numbers: read_dentries(block)
+        data_block_numbers = [pointer for pointer in pointers if pointer != 0]
+        return data_block_numbers
+        # There may be unallocated blocks yet (pointers to 0), so we will only keep those pointers that do not equal to null (0).
+
+    def _get_indirect_1_blocks(self, block_number):
+        raw_indirect_1_block = self.filesystem.read_block(block_number)
+        indirect_1_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_1_block) if pointer[0] != 0]
+        return indirect_1_block
+
+    def _get_indirect_2_blocks(self, block_number):
+        raw_indirect_2_block = self.filesystem.read_block(block_number)
+        indirect_2_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_2_block) if pointer[0] != 0]
+        
+        data_block_numbers = []
+
+        for p in indirect_2_block:
+            data_block_numbers += self._get_indirect_1_blocks(p)
+
+        return data_block_numbers
+
+    def _get_indirect_3_blocks(self, block_number):
+        raw_indirect_3_block = self.filesystem.read_block(block_number)
+        indirect_3_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_3_block) if pointer[0] != 0]
+
+        data_block_numbers = []
+
+        for p in indirect_3_block:
+            data_block_numbers += self._get_indirect_2_blocks(p)
+
+        return data_block_numbers
 
     def close(self):
         """
@@ -229,19 +287,53 @@ class FileHandle:
         ret = [] # acá iremos guardando las cadenas de bytes que leamos del buffer, y al final uniremos todo.
 
         # let's read the direct blocks
-        while size > (self._buffer_size - self._buffer_pos) and self._current_block_pointer+1 < 12:
+        while size > (self._buffer_size - self._buffer_pos) and self._current_block_pointer+1 < len(self._data_block_numbers): # len is O(1)
             ret.append(self._buffer[self._buffer_pos:]) # acá arrancamos de 'buffer_pos' por si primero se leyó poquito (y no se entró a este while), y luego mucho (y sí se entró).
             size           -= self._buffer_size - self._buffer_pos # vamos restando de 'size' la cantidad de bytes que ya leimos.
             self._file_pos += self._buffer_size - self._buffer_pos # vamos avanzando el puntero del archivo a medida que leemos.
             self._buffer_pos = 0 # como consumimos la totalidad del buffer, seteamos su posicion en 0.
             next_block_pointer = self._current_block_pointer + 1
-            next_block_number = self.inode_obj.i_block[next_block_pointer]
+            next_block_number = self._data_block_numbers[next_block_pointer]
+            # YA NO SERÍA NECESARIO, YA FILTRAMOS LOS 0's DE LA LISTA DE PUNTEROS A BLOQUES
+            """
             if next_block_number == 0:
                 # creeria que no hay huecos entre bloques asignados a un archivo (respecto a los punteros del inodo),
                 # por ende, cuando llegue al primer bloque sin asignar aún (puntero nulo), significa fin de archivo (ya leimos todos sus bloques).
                 break
+            """
             self._buffer = self.filesystem.read_block(next_block_number) # leemos el siguiente bloque de datos y lo guardamos en el buffer.
             self._current_block_pointer = next_block_pointer
+
+        # ESTO FUE UNA PRUEBA PARA IR LEYENDO LOS BLOQUES INDIRECTOS PRESCINDIENDO DE 'self._data_block_numbers', PERO SE ESTABA HACIENDO MUY REBUSCADO.
+        """
+        # and when appropriate, the indirect blocks.
+        if self._current_block_pointer == 12:
+            # si llegamos acá, quiere decir que sí está el bloque de indireccion simple, sino el 'break' de antes se habría ejecutado y no se actualizaría el n° de puntero.
+            # raw_indirect_1_block = self.filesystem.read_block(self.inode_obj.i_block[12])
+            raw_indirect_1_block = self._buffer # el buffer queda con el bloque de indireccion simple.
+            indirect_1_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_1_block) if pointer[0] != 0] # ESTAS 2 LINEAS DEBERIAN IR EN OTRO LADO, YA QUE EN UN 2do READ lo VOLVERÍA A HACER.
+            i = self._current_indirect_1_block_pointer
+            self._buffer = self.filesystem.read_block(indirect_1_block[i])
+            while size > (self._buffer_size - self._buffer_pos) and i+1 < len(indirect_1_block): # mínimo siempre len == 1, ya que como el bloque de indireccion no es 'nulo', minimo habrá un puntero dentro no nulo.
+                ret.append(self._buffer[self._buffer_pos:])
+                size           -= self._buffer_size - self._buffer_pos
+                self._file_pos += self._buffer_size - self._buffer_pos
+                self._buffer_pos = 0
+                next_block_pointer = i + 1
+                next_block_number = indirect_1_block[next_block_pointer]
+                # acá no hace falta esta comprobacion, porque al hacer la lista 'indirect_1_block' evitamos los punteros a bloques nulos.
+                #if next_block_number == 0: # PERO RECORDEMOS QUE LA ULTIMA VUELTA DEL WHILE, DEJARA EN EL BUFFER UN BLOQUE QUE LUEGO AGREGAREMOS AL 'ret'.
+                #    break
+                self._buffer = self.filesystem.read_block(next_block_number)
+                i = next_block_pointer
+            self._current_indirect_1_block_pointer = i
+
+            if i+1 == len(indirect_1_block): # si ya lei todo el bloque de indireccion simple, avanzo al doble.
+                self._current_block_pointer += 1
+
+        if self._current_block_pointer == 13 and self.inode_obj.i_block[13] != 0:
+            # bloque de indirección doble
+        """
 
         # cuando lleguemos acá, querrá decir que 'size' es más chico que el tamaño del buffer (bloque)
         span = min(self.inode_obj.i_size - self._file_pos, size) # esto lo hacemos para evitar leer del buffer mas bytes que los restantes del archivo.
@@ -266,7 +358,7 @@ class FileHandle:
             # (en efecto, pasa eso, nos muestra lo ultimo que quedo del buffer sin 'supuestamente' leer.
             #  de todas formas luego sale del while por el break, ya que realmente no hay mas bloques para leer
             #  y luego como tanto 'span' como 'buffer_pos' quedan en 0, no hay problema con los punteros '_pos'.
-            #  Igualmente creo que debería arreglarlo.)
+            #  Igualmente creo que debería arreglarlo.) ARREGLADO CON EL NUEVO ENFOQUE DE 'data_block_numbers' (con la condicion del while)
 
     def tell(self):
         """
@@ -356,6 +448,12 @@ class Ext2:
         self.handle.seek(self.base_address)
         self.handle.read(address + offset) # por alguna razon, el 'seek' me tira error, entonces lo cambié por 'read'.
         return self.handle.read(length)    # ¿¿ PODRÍA HACER UN for in range(block_number) COSA DE IR HACIENDO SEEK'S DE A 1 BLOQUE ??
+        """
+        for i in range(block_number):
+            self.handle.seek(block_size)
+        self.handle.seek(offset)
+        return self.handle.read(length)
+        """
 
     def read_block(self, block_number):
         """
