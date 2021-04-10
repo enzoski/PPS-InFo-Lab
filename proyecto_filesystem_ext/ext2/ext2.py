@@ -88,10 +88,12 @@ class Directory:
             if file.inode != 0:
                 # This happens only if the first file is deleted;
                 # all other deleted file entries will be skipped due to
-                # a proper rec_len of the previous entry. (inode == 0 -> file deleted)
+                # a proper rec_len of the previous entry.
+                # (file deleted -> prev. rec_len points to next dentry, and inode=0)
                 self.files.append(file)
             offset += file.rec_len
 
+    """
     def _read_indirect_1_dentries(self, block_number):
         raw_indirect_1_block = self.filesystem.read_block(block_number)
         indirect_1_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_1_block) if pointer[0] != 0]
@@ -111,12 +113,15 @@ class Directory:
         indirect_3_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_3_block) if pointer[0] != 0]
         for p in indirect_3_block:
             self._read_indirect_2_dentries(p)
+    """
 
 
     def _parse(self):
 
+        """
         block_size = self.filesystem.superblock.s_log_block_size
         directory_blocks = (self.inode_obj.i_blocks*512) / block_size
+        """
 
         # con 'directory_blocks' lograremos leer los bloques justos y necesarios,
         # y por lo tanto está asegurado que los punteros a esos bloques, no serán nulos (p -> 0).
@@ -127,6 +132,7 @@ class Directory:
         # ADEMAS, CON QUE LOS PUNTEROS DEL INODO SEAN !=0, MINIMAMENTE HABRA UNA SECUENCIA DE PUNTEROS NO NULOS Y NO HABRÁ PROBLEMA.
         # (por ejemplo, si puntero_inodo[14] != 0, quiere decir que minimo hay 1 bloque de datos válido al final de bloque_triple -> bloque_doble -> bloque_simple -> bloque_datos)
 
+        """
         i = 0
 
         # let's read the direct blocks
@@ -150,6 +156,38 @@ class Directory:
             block_number = self.inode_obj.i_block[i]
             self._read_indirect_3_dentries(block_number)
             i += 1
+
+        """
+
+
+
+        # let's read the direct blocks
+        direct_blocks = self.filesystem._parse_direct_blocks(self.inode_obj.i_block[0:12])
+        for directory_block_number in direct_blocks:
+            self._read_dentries(directory_block_number)
+
+        # and now the indirect blocks
+        if self.inode_obj.i_block[12] != 0: # thus, we avoid reading the block '0' (which would be the boot area or boot area + superblock, depending on the block_size)
+            indirect_1_block = self.filesystem._parse_indirect_1_block(self.inode_obj.i_block[12])
+            for directory_block_number in indirect_1_block:
+                self._read_dentries(directory_block_number) # we read the directory entries contained in the blocks pointed to by the pointers of indirect_1_block.
+
+        if self.inode_obj.i_block[13] != 0:
+            indirect_2_block = self.filesystem._parse_indirect_2_block(self.inode_obj.i_block[13])
+            for directory_block_number in indirect_2_block:
+                self._read_dentries(directory_block_number)
+
+        if self.inode_obj.i_block[14] != 0:
+            indirect_3_block = self.filesystem._parse_indirect_3_block(self.inode_obj.i_block[14])
+            for directory_block_number in indirect_3_block:
+                self._read_dentries(directory_block_number)
+
+
+        # NOTA: por más que guardo en variables la lista de los numeros de bloques de datos
+        #       que contienen las entradas de directorio, son locales a este metodo interno,
+        #       por lo que al terminar, se 'liberan' de memoria, no es que conservemos esas referencias
+        #       (digo por la magnitud de bytes que podríamos llegar a tener,
+        #       ya que cada bloque es referenciado por un puntero de 4 bytes).
 
 
     # un extra, para curosear.
@@ -213,13 +251,13 @@ class FileHandle:
         # (por ejemplo, si la lista de numeros de bloques tiene 1.000.000 de elementos, tendremos 4 MB en memoria)
         # (aca podemos ver diferentes tamaños máximo en bloques de archivos: https://www.nongnu.org/ext2-doc/ext2.html#def-blocks)
         self._data_block_numbers = []
-        self._data_block_numbers = self._get_direct_blocks(self.inode_obj.i_block[0:12])
-        if self.inode_obj.i_block[12] != 0: # así evitamos leer el bloque '0' (que sería el boot area o boot area + superblock, dependiendo el block_size)
-            self._data_block_numbers += self._get_indirect_1_blocks(self.inode_obj.i_block[12])
+        self._data_block_numbers = self.filesystem._parse_direct_blocks(self.inode_obj.i_block[0:12])
+        if self.inode_obj.i_block[12] != 0: # thus, we avoid reading the block '0' (which would be the boot area or boot area + superblock, depending on the block_size)
+            self._data_block_numbers += self.filesystem._parse_indirect_1_block(self.inode_obj.i_block[12])
         if self.inode_obj.i_block[13] != 0:
-            self._data_block_numbers += self._get_indirect_2_blocks(self.inode_obj.i_block[13])
+            self._data_block_numbers += self.filesystem._parse_indirect_2_block(self.inode_obj.i_block[13])
         if self.inode_obj.i_block[14] != 0:
-            self._data_block_numbers += self._get_indirect_3_blocks(self.inode_obj.i_block[14])
+            self._data_block_numbers += self.filesystem._parse_indirect_3_block(self.inode_obj.i_block[14])
         # self._data_block_numbers.append(0) # para indicar 'fin de archivo' NO HARÍA FALTA POR LA SEGUNDA VERIFICACIÓN DEL WHILE.
 
     def __repr__(self):
@@ -227,38 +265,6 @@ class FileHandle:
     
     def __str__(self):
         return self.__repr__()
-
-    def _get_direct_blocks(self, pointers): # PODRIA REAPROVECHAR ESTE ENFOQUE EN 'Directory' Y HACER UN for block in directory_block_numbers: read_dentries(block)
-        data_block_numbers = [pointer for pointer in pointers if pointer != 0]
-        return data_block_numbers
-        # There may be unallocated blocks yet (pointers to 0), so we will only keep those pointers that do not equal to null (0).
-
-    def _get_indirect_1_blocks(self, block_number):
-        raw_indirect_1_block = self.filesystem.read_block(block_number)
-        indirect_1_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_1_block) if pointer[0] != 0]
-        return indirect_1_block
-
-    def _get_indirect_2_blocks(self, block_number):
-        raw_indirect_2_block = self.filesystem.read_block(block_number)
-        indirect_2_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_2_block) if pointer[0] != 0]
-        
-        data_block_numbers = []
-
-        for p in indirect_2_block:
-            data_block_numbers += self._get_indirect_1_blocks(p)
-
-        return data_block_numbers
-
-    def _get_indirect_3_blocks(self, block_number):
-        raw_indirect_3_block = self.filesystem.read_block(block_number)
-        indirect_3_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_3_block) if pointer[0] != 0]
-
-        data_block_numbers = []
-
-        for p in indirect_3_block:
-            data_block_numbers += self._get_indirect_2_blocks(p)
-
-        return data_block_numbers
 
     def close(self):
         """
@@ -482,6 +488,39 @@ class Ext2:
         # and now we read it
         raw_inode = self.read_record(first_inode_table_block, INODE_STRUCT_SIZE, offset=local_inode_index*INODE_STRUCT_SIZE)
         return raw_inode
+
+    def _parse_direct_blocks(self, pointers): # PODRIA REAPROVECHAR ESTE ENFOQUE EN 'Directory' Y HACER UN for block in directory_block_numbers: read_dentries(block)
+        data_block_numbers = [pointer for pointer in pointers if pointer != 0]
+        return data_block_numbers
+        # There may be unallocated blocks yet (pointers to 0), so we will only keep those pointers that do not equal to null (0).
+
+    def _parse_indirect_1_block(self, block_number):
+        raw_indirect_1_block = self.read_block(block_number)
+        # how much power in a single line of code! it's beautiful, Python at its best!
+        indirect_1_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_1_block) if pointer[0] != 0]
+        return indirect_1_block
+
+    def _parse_indirect_2_block(self, block_number):
+        raw_indirect_2_block = self.read_block(block_number)
+        indirect_2_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_2_block) if pointer[0] != 0]
+        
+        data_block_numbers = []
+
+        for p in indirect_2_block:
+            data_block_numbers += self._parse_indirect_1_block(p)
+
+        return data_block_numbers
+
+    def _parse_indirect_3_block(self, block_number):
+        raw_indirect_3_block = self.read_block(block_number)
+        indirect_3_block = [pointer[0] for pointer in struct.iter_unpack("<I", raw_indirect_3_block) if pointer[0] != 0]
+
+        data_block_numbers = []
+
+        for p in indirect_3_block:
+            data_block_numbers += self._parse_indirect_2_block(p)
+
+        return data_block_numbers
 
 
     def open(self, path):
