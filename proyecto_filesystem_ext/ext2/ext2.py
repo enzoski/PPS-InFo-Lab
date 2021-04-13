@@ -6,8 +6,6 @@
 #    (igualmente esto es más a modo de comentario, así como lo hice funciona como quería, no creo que haya que cambiar la lógica)
 #  - Quizas todos los calculos referidos a la cantidad de grupos de bloques, deberian ir en la clase Superblock
 #    (por lo que hago en el __str__ y en las 2 lineas previas a armar la lista de descriptores de grupos).
-#  - Cuando hago un seek o un read muy grande, me da error (onda, moverse de a gigas). IMPORTANTE.
-#    (los unicos 'seeks' que quizas alguna vez fallen, son los 'seek(base_address)', en los casos que 'base_address' sea enorme)
 #  - Quizás haya que mejorar la forma de verificar el tipo de archivo (en 'Ext2.open()')
 #  - Falta el manejo de archivos de datos como tal, o sea, buscar un archivo y leer sus binarios
 #    (quizas sea una estructura parecida a la de Directory)
@@ -450,16 +448,28 @@ class Ext2:
         of the filesystem (block_number), starting from an offset (by default 0).
         """
         block_size = self.superblock.s_log_block_size
-        address = block_number*block_size
-        self.handle.seek(self.base_address)
-        self.handle.read(address + offset) # por alguna razon, el 'seek' me tira error, entonces lo cambié por 'read'.
-        return self.handle.read(length)    # ¿¿ PODRÍA HACER UN for in range(block_number) COSA DE IR HACIENDO SEEK'S DE A 1 BLOQUE ??
-        """
-        for i in range(block_number):
-            self.handle.seek(block_size)
-        self.handle.seek(offset)
-        return self.handle.read(length)
-        """
+        address = block_number*block_size             # este número será multiplo de 512 ya que 'block_size' lo es.
+        self.handle.seek(self.base_address + address) # 'base_address' tambien lo es, ya que debe ser el sector del dispositivo donde arranca la partición.
+        for i in range(offset//block_size):           # hago esto mas que nada para casos de offset's muy grandes*
+            self.handle.seek(block_size, 1)
+        # acá tengo que hacer un 'read' para desplazarme, porque si hiciera un seek, el siguiente read podría dar error por justo no estar posicionado en un multiplo de 512.
+        self.handle.read(offset % block_size)         # *y que luego este read sea chico: será menos del tamaño de bloque (<= block_size-1),
+        raw_record = self.handle.read(length)
+        return raw_record
+
+        # "por alguna razon, el 'seek' o 'read' me tira error" // ¿¿ PODRÍA HACER UN for in range(block_number) COSA DE IR HACIENDO SEEK'S DE A 1 BLOQUE ??
+        
+        # SOLUCIÓN: probando, descubrí que hay algunas 'restricciones' a la hora
+        # de querer leer algo del dispositivo de almacenamiento (esto ya es por fuera del filesystem).
+        # Solo podemos leer (read) si estamos posicionados (seek) en un multiplo de 512 bytes.
+        # Una vez que a partir de ahí, hacemos una primera lectura, tendremos habilitados
+        # los siguientes 8192 bytes para hacer algun seek en ese intervalo y realizar un read sin problemas.
+        # (aunque luego el read que hagamos se pase de ese limite, no pasa nada).
+        # Caso contrario, se lanzará una excepción.
+        # Por ende, yo reemplazo un seek(offset) por un read(offset), no es muy lindo pero funciona.
+        
+        # nota: para archivos 'normales', este problema no se presenta, por ende podriamos
+        #       analizar por ejemplo una imagen de un disco (.vhd) sin pensar mucho en esto.
 
     def read_block(self, block_number):
         """
@@ -467,10 +477,16 @@ class Ext2:
         """
         block_size = self.superblock.s_log_block_size
         address = block_number*block_size
-        self.handle.seek(self.base_address)
-        self.handle.read(address) # por alguna razon, el 'seek' me tira error, entonces lo cambié por 'read'.
-        raw_block = self.handle.read(block_size)
+        self.handle.seek(self.base_address + address) # acá va todo bien, porque está asegurado que quedaremos en un multiplo de 512 bytes.
+        raw_block = self.handle.read(block_size) # por ende este read no da problemas.
         return raw_block
+
+        #block_size = self.superblock.s_log_block_size
+        #self.handle.seek(self.base_address)
+        #for i in range(block_number):
+        #    self.handle.seek(block_size, 1)
+        #raw_block = self.handle.read(block_size)
+        #return raw_block
 
     def read_inode(self, inode_number):
         """
