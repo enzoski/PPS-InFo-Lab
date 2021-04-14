@@ -1,0 +1,143 @@
+Microsoft Windows [Versión 10.0.19041.867]
+(c) 2020 Microsoft Corporation. Todos los derechos reservados.
+
+C:\WINDOWS\system32>cd C:\Users\Enzo\Desktop\asd
+
+C:\Users\Enzo\Desktop\asd>python
+Python 3.9.1 (tags/v3.9.1:1e5d33e, Dec  7 2020, 17:08:21) [MSC v.1927 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+
+>>> import ext2
+
+>>> particion_pendrive = ext2.Ext2(r"\\.\PhysicalDrive1", 2048*512)
+
+>>> directorio_raiz = particion_pendrive.open("/")
+
+>>> print(directorio_raiz)
+< Directory pendrive_ext2 >
+----------FILES----------
+. (Directory)
+.. (Directory)
+lost+found (Directory)
+Captura de pantalla de 2021-03-03 13-35-56.png (Regular file)
+Captura de pantalla de 2021-03-03 13-36-35.png (Regular file)
+Captura de pantalla de 2021-03-03 13-38-58.png (Regular file)
+Captura de pantalla de 2021-03-03 13-45-02.png (Regular file)
+Captura de pantalla de 2021-03-03 13-54-03.png (Regular file)
+Captura de pantalla de 2021-03-03 13-55-01.png (Regular file)
+comando-ls-a-l.png (Regular file)
+archivos de texto (Directory)
+-------------------------
+
+>>> dir_texto = particion_pendrive.open("/archivos de texto")
+>>>
+>>> dir_texto
+< Directory pendrive_ext2/archivos de texto >
+>>>
+>>> print(dir_texto)
+< Directory pendrive_ext2/archivos de texto >
+----------FILES----------
+. (Directory)
+.. (Directory)
+texto-simple.txt (Regular file)
+mas archivos (Directory)
+-------------------------
+
+>>> dir_texto_2 = particion_pendrive.open("/archivos de texto/mas archivos")
+>>> print(dir_texto_2)
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+----------FILES----------
+. (Directory)
+.. (Directory)
+texto-8k.txt (Regular file)
+texto-4k.txt (Regular file)
+texto-2k.txt (Regular file)
+texto-1k.txt (Regular file)
+-------------------------
+
+>>> arch_8k = particion_pendrive.open("/archivos de texto/mas archivos/texto-8k.txt")
+>>>
+>>> arch_8k
+< FileHandle for pendrive_ext2/archivos de texto/mas archivos/texto-8k.txt>
+>>>
+>>> print(arch_8k.show_inode())
+< File pendrive_ext2/archivos de texto/mas archivos/texto-8k.txt >
+----ASSOCIATED INODE-----
+File type and access rights:                  -rw-r--r--   // REGULAR FILE
+Owner identifier:                             0
+File length in bytes:                         8192
+Time of last file access:                     2021-04-07 20:16:45
+Time that inode last changed (file creation): 2021-04-07 20:16:45   // DEBERÍA SACAR LO DEL 'file creation', PORQUE NO ES TAN ASÍ
+Time that file contents last changed:         2021-04-07 20:08:51
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           1
+Number of data blocks of the file:            16 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [992257, 992258, 992259, 992260, 992261, 992262, 992263, 992264, 0, 0, 0, 0] // ACÁ VEMOS LOS 8 BLOQUES CONTIGUOS ASIGNADOS AL ARCHIVO
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+-------------------------
+
+// PRUEBAS OPERACIONES DE ARCHIVOS
+
+>>> arch_8k.tell()
+0
+>>> arch_8k.read(10)
+b'holaaaaaaa'
+>>> arch_8k.tell()
+10
+>>> arch_8k.read(20)
+b'aaaaaaaaaaaaaaaaaaaa'
+>>> arch_8k.tell()
+30
+>>> arch_8k.close()
+True
+
+// PRUEBAS DE ARCHIVO CERRADO
+
+>>> arch_8k.tell()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Desktop\asd\ext2.py", line 276, in tell
+    raise ValueError("I/O operation on closed file.")
+ValueError: I/O operation on closed file.
+
+>>> arch_8k.read(20)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Desktop\asd\ext2.py", line 224, in read
+    raise ValueError("I/O operation on closed file.")
+ValueError: I/O operation on closed file.
+
+>>> arch_8k.close()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Desktop\asd\ext2.py", line 210, in close
+    raise ValueError("I/O operation on closed file.")
+ValueError: I/O operation on closed file.
+
+// EL INODO SIEMPRE LO PODREMOS CONSULTAR
+
+>>> print(arch_8k.show_inode())
+< File pendrive_ext2/archivos de texto/mas archivos/texto-8k.txt >
+----ASSOCIATED INODE-----
+File type and access rights:                  -rw-r--r--
+Owner identifier:                             0
+File length in bytes:                         8192
+Time of last file access:                     2021-04-07 20:16:45
+Time that inode last changed (file creation): 2021-04-07 20:16:45
+Time that file contents last changed:         2021-04-07 20:08:51
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           1
+Number of data blocks of the file:            16 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [992257, 992258, 992259, 992260, 992261, 992262, 992263, 992264, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+-------------------------
+
+>>>
