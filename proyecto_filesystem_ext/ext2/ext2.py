@@ -364,60 +364,6 @@ class FileHandle:
             #  y luego como tanto 'span' como 'buffer_pos' quedan en 0, no hay problema con los punteros '_pos'.
             #  Igualmente creo que debería arreglarlo.) ARREGLADO CON EL NUEVO ENFOQUE DE 'data_block_numbers' (con la condicion del while)
 
-    def seek(self, offset, whence=0):
-        """
-        Moves the file pointer, based on 'offset'.
-        The 'whence' argument is optional and defaults to 0, which means absolute file positioning,
-        other values are 1 which means seek relative to the current position,
-        and 2 means seek relative to the file's end.
-        Returns the current position of the file pointer, after moving.
-        """
-        
-        if self.closed == True:
-            raise ValueError("I/O operation on closed file.")
-
-        if whence == 0:
-            new_file_pos = offset
-        elif whence == 1:
-            new_file_pos = self._file_pos + offset
-        elif whence == 2:
-            new_file_pos = self.inode_obj.i_size + offset # se espera que el offset sea negativo
-        else:
-            raise ValueError(f"invalid whence ({whence}, should be 0, 1 or 2)")
-
-        # La idea es calcular la cantidad de bloques que representa la nueva posicion
-        # del puntero del archivo (siempre arrancando el conteo desde el inicio del archivo,
-        # independientemente del 'whence', ya que nos basaremos en la nueva posicion absoluta).
-        # Como tenemos de antemano cargados cada n° de bloque de datos del archivo (self._data_block_numbers),
-        # directamente podemos obtener el bloque donde cae la nueva posicion, y así cargarlo en el buffer.
-
-        if new_file_pos >= self.inode_obj.i_size:       # Si queremos ir más alla del fin de archivo
-            block_number = self._data_block_numbers[-1] # nos quedaremos con su último bloque
-            self._buffer_pos = self._buffer_size        # y movemos el puntero del buffer al final del buffer
-            self._file_pos = self.inode_obj.i_size      # y el puntero del archivo al final del archivo.
-            self._current_block_pointer = len(self._data_block_numbers) - 1 # Actualizamos este atributo para un futuro 'read()'.
-        elif new_file_pos < 0:
-            block_number = self._data_block_numbers[0] # Un analisis similar si queremos ir más atras del principio del archivo.
-            self._buffer_pos = 0
-            self._file_pos = 0
-            self._current_block_pointer = 0
-        else:
-            block_index = new_file_pos // self._buffer_size       # Sino, obtenemos cuantos bloques del archivo abarca el offset,
-            block_number = self._data_block_numbers[block_index]  # nos quedamos con el n° de bloque de datos obtenido de la cantidad calculada
-            self._buffer_pos = new_file_pos % self._buffer_size   # desplazamos el puntero del buffer la cantidad restante de bytes
-            self._file_pos = new_file_pos                         # y el puntero del archivo debe quedar con el offset.
-            self._current_block_pointer = block_index             # Actualizamos este atributo para un futuro 'read()'.
-        
-        self._buffer = self.filesystem.read_block(block_number) # Finalmente actualizamos el buffer con la lectura del bloque obtenido.
-        
-        return self._file_pos
-
-        # NOTA: asumo que en la lista de data_block_numbers no habría 'huecos' (0's) entre medio, no se si es posible*,
-        #       pero de pasar, esto fallaría ya que data_block_numbers[block_index] estaría desfasado.
-        #       (*es decir, no se si es posible que un bloque de datos sea desasignado del archivo,
-        #       quedando un puntero a null (->0) entre medio, y que luego no se 'desfragmenten',
-        #       o no se 'compacten', los punteros del inodo)
-
     def tell(self):
         """
         Returns the current position of the file pointer.
