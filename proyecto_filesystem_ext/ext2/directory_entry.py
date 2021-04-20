@@ -1,4 +1,5 @@
-# Creo que ya estaria completa esta clase
+# To check:
+#  - nothing else for now.
 
 import struct
 
@@ -21,6 +22,7 @@ class DirectoryEntry:
     """
     Class representing a Directory Entry of an ext2 filesystem.
     (are the records stored in the directory blocks pointed to by directory inodes)
+    (I call them 'directory blocks', but they count as data blocks of the filesystem)
 
     The structure has a variable length, since the 'name' field is a
     variable length array of up to 255 characters. Moreover, the length of a
@@ -109,10 +111,8 @@ class DirectoryEntry:
     def file_type(self, value):
         value = int(value)
         # to avoid a KeyError
-        if value < 0:
+        if value < 0 or value > 7:
             value = 0
-        elif value > 7:
-            value = 7
         self._file_type = value
 
     @property

@@ -1,15 +1,16 @@
-# Cosas a revisar:
-#  - no se bien si hacer ciertos parseos en el setter o en el getter (como el caso de 'i_mode' o 'i_flags')
-#    -> POR AHORA QUE QUEDEN ASÍ.
-#  - fijarme lo de las funciones de inodos (definidas al final de la clase).
-#  - tengo que ver bien el tema de los timestamps, porque haciendo una prueba en un pendrive que formatee en ext2,
-#    al leer la fecha de creación me di cuenta que se grabó/escribió en UTC-3, y entonces el datetime.fromtimestamp()
-#    al hacer la conversion a nuestra zona horaria (UTC-3), resta 3 horas, entonces queda inconsistente.
-#    De ser siempre así (que al manipular archivos de ext2 las fechas se escriban en la zona horaria de la PC), tengo
-#    que agregar un parámetro al método .fromtimestamp() para que no la convierta. Pero el tema de esto, es que al mostrar
-#    las fechas, no sabremos a qué zona horaria pertenecen, salvo que sepamos exactamente la zona horaria de la PC donde
-#    se grabaron esas fechas.
-#    Y ademas, hacer algo para que cuando una fecha no esté definida (como la de eliminacion), no nos muestre el 1/1/1970.
+# To check:
+#  - I'm not sure whether to do certain parse on the 'setter' or the 'getter' (like the case of 'i_mode' or 'i_flags')
+#    -> FOR NOW, LET THEY REMAIN AS THEY ARE CURRENTLY.
+#  - check if the inode functions (defined at the end of the class) have to be implemented somewhere.
+#  - I have to see the issue of timestamps well, because doing a test on a pendrive that I formatted in ext2,
+#    when reading the creation date I realized that it was recorded/written in UTC-3, and then the 'datetime.fromtimestamp()'
+#    method, when converting to our time zone (UTC-3), it subtracts 3 hours, then it is inconsistent.
+#    If this is always the case (that when manipulating ext2 files the dates are written in the PC's time zone),
+#    I have to add a parameter to the '.fromtimestamp()' method, so that it does not convert it.
+#    But the point of this, is that when showing the dates, we will not know what time zone they belong to,
+#    unless we know exactly the time zone of the PC where those dates were written.
+#    WHATEVER CRITERION WE CHOOSE, APPLY THE SAME TO THE 'superblock.py' DATES.
+#    And also, do something so that when a date is not defined (such as the elimination date), it does not show us 1/1/1970.
 
 import datetime
 import struct
@@ -38,7 +39,7 @@ N_FLAGS = 14 # in case in the future I parse more (max 32)
 
 # Flags indicate how ext2 should behave when accessing data pointed to by an inode.
 file_flags = {
-    # 0x0000: "", # (pensaba usar esto si parseaba solo como string, y no como lista)
+    # 0x0000: "", # (I was thinking of using this if I parsed it only as a string, and not as a list)
     # ---
     0x0001: "secure deletion",
     0x0002: "record for undelete",
@@ -139,7 +140,7 @@ class Inode:
         File type and access rights (16 bits)
         The top 4 bits for the type, and the bottom 12 bits for the access rights.
 
-        Returns a formatted-string (me basé en como realmente se muestra en Linux)
+        Returns a formatted-string (based on how it actually shows on Linux)
         """
         f_type   = self._i_mode >> 12
         permissions = f"{file_types[f_type]}"
@@ -159,7 +160,7 @@ class Inode:
         rights = [owner_rights, group_rights, other_rights]
 
         for r in rights:
-            permissions += access_rights[r & 0b100] # cada bit tiene un significado
+            permissions += access_rights[r & 0b100] # each bit has a meaning
             permissions += access_rights[r & 0b010]
             permissions += access_rights[r & 0b001]
 
@@ -179,7 +180,7 @@ class Inode:
         return self._i_uid
 
     @i_uid.setter
-    def i_uid(self, value): #quizas lo represente como string
+    def i_uid(self, value):
         self._i_uid = value
 
     @property
@@ -290,12 +291,12 @@ class Inode:
         Returns a formated-string with the flags of the file
         """
         flag_list = []
-        for b in range(0, N_FLAGS):         # parseo (por ahora) solo 'n' bits de los 32 que tiene "_i_flags".
-            k = self._i_flags & (0b1 << b)  # voy aplicando mascaras del tipo 1, 10, 100, 1000 ... (bits).
+        for b in range(0, N_FLAGS):         # I parse (for now) only 'n' bits of the 32 that "_i_flags" has.
+            k = self._i_flags & (0b1 << b)  # I am applying masks of the type 1, 10, 100, 1000 ... (bits).
             if k != 0:
-                flag_list.append(file_flags[k]) # los bits en 0 representarán un string vacio, y los 1, un flag.
-        return ", ".join(flag_list) # esto lo hago para que se vea "mejor" el string.
-        #no se si se podria hacer esto con una lista por comprension ("List Comprehension").
+                flag_list.append(file_flags[k]) # the bits 0s will represent an empty string, and the 1s, a flag.
+        return ", ".join(flag_list) # I do this to make the string look "better".
+        # I'm not sure if this could be done with a "List Comprehension".
 
     @i_flags.setter
     def i_flags(self, value):
@@ -315,8 +316,9 @@ class Inode:
     @property
     def i_block(self):
         """
-        Pointers to data blocks (12 direct and 3 indirect)
-        (I will store them in a list)
+        Pointers to data blocks (12 direct and 3 indirect). I will store them in a list.
+        Pointers to 0 are equal to null pointers, which means there is no block assigned/allocated yet.
+        Otherwise, the value stored in the pointer is the block number that it refers to.
         """
         return self._i_block
 
@@ -392,7 +394,11 @@ class Inode:
                 f"Hard links counter:                           {self.i_links_count}\n"
                 f"Number of data blocks of the file:            {self.i_blocks} (in units of 512 bytes)\n"
                 f"File flags:                                   {self.i_flags}\n"
-                # faltarian los demás (si es que decido querer mostrarlos)
+                f"Direct pointers to data blocks:               {self.i_block[0:12]}\n"
+                f"Pointer to simple indirect block:             {self.i_block[12]}\n"
+                f"Pointer to doubly-indirect block:             {self.i_block[13]}\n"
+                f"Pointer to triply-indirect block:             {self.i_block[14]}\n"
+                # some fields would be missing (which for the moment I decided not to show them).
             )
 
     # Ext2 Inode Operations

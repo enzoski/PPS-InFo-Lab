@@ -1,13 +1,13 @@
-# Cosas a revisar:
-#  - ver bien si lo del getter deberia ir en el setter (en s_log_block_size y s_state). -> POR AHORA QUE QUEDE ASÍ
-#  - el tema de que el 'unpack' devuelve tuplas, y tengo que colocar al final '[0]'. (igual no pasa nada)
-#  - los metodos/operaciones en sí del superbloque (definidas al final).
-#  - lo que comenté en 's_uuid.setter'.
-#  - en s_checkinterval quizas habria que mostrar solo los dias, o las horas.
-#  - quizas faltaria implementar el getter de 's_feature_compat', 's_feature_incompat' y 's_feature_ro_compat'
-#    (https://www.nongnu.org/ext2-doc/ext2.html#s-feature-compat).
-#  - quizas faltaria implementar el getter de 's_algo_bitmap' (https://www.nongnu.org/ext2-doc/ext2.html#s-algo-bitmap).
-#  - quizás estaría bueno agregar el dunder __len__(), y en las otras clases también.
+# To check:
+#  - decide if the 'getter' thing should go in the 'setter' (in s_log_block_size and s_state).
+#    -> FOR NOW LET EVERYTHING STAY AS IT IS NOW
+#  - check if the superblock's own methods/operations (defined last) should be implemented somewhere.
+#  - what I commented in 's_uuid.setter'.
+#  - in 's_checkinterval' maybe we should show only the days, or the hours.
+#  - maybe it would be necessary to implement the getter of 's_feature_compat',
+#    's_feature_incompat' and 's_feature_ro_compat' (https://www.nongnu.org/ext2-doc/ext2.html#s-feature-compat).
+#  - maybe it would be necessary to implement the getter of 's_algo_bitmap' (https://www.nongnu.org/ext2-doc/ext2.html#s-algo-bitmap).
+#  - maybe it would be nice to add the '__len __()' dunder method, which shows the size of the structure (and also in the other classes).
 
 import datetime
 import struct
@@ -89,7 +89,7 @@ class Superblock:
         #
         p_s_padding1          = struct.unpack("<H", data[206:208])[0]
         p_s_reserved          = data[208:1024]
-        # para ext3 hay algunos campos más: https://www.nongnu.org/ext2-doc/ext2.html#superblock
+        # for ext3 there are some more fields: https://www.nongnu.org/ext2-doc/ext2.html#superblock
 
         self._raw_data = data # the raw read from the disk (the 1024 bytes of the superblock).
 
@@ -182,7 +182,10 @@ class Superblock:
 
     @property
     def s_free_blocks_count(self):
-        """Free blocks counter"""
+        """
+        Free blocks counter
+        (data blocks + directory-entry blocks)
+        """
         return self._s_free_blocks_count
 
     @s_free_blocks_count.setter
@@ -191,7 +194,13 @@ class Superblock:
 
     @property
     def s_free_inodes_count(self):
-        """Free inodes counter"""
+        """
+        Free inodes counter
+        The inodes are each of the entries in the inode table, and this table
+        has a calculable size. Creating an inode does not mean that a new block
+        is allocated from the file system, but rather to fill in a new entry in the table.
+        Therefore, "s_free_inodes_count" is an independent calculation of "s_free_blocks_count".
+        """
         return self._s_free_inodes_count
 
     @s_free_inodes_count.setter
@@ -224,10 +233,10 @@ class Superblock:
         size = 2**(10+self._s_log_block_size)
         return size
         
-        # creo que esto estaria bien, o sea, si desde 'afuera' quieren ver el tamaño
-        # del bloque, directamente veran el tamaño en bytes.
-        # y el verdadero valor del atributo (0, 1 o 2), que solo pueda ser accedido
-        # internamente (desde acá, el codigo fuente, haciendo self._s_log_block_size).
+        # I think this would be fine, that is, if from 'outside' someone
+        # wants to see the size of the block, they will directly see the size in bytes.
+        # And that the true value of the attribute (0, 1 or 2), can only be accessed internally
+        # (from here, the source code, doing self._s_log_block_size).
 
     @s_log_block_size.setter
     def s_log_block_size(self, value):
@@ -535,7 +544,7 @@ class Superblock:
 
     @s_uuid.setter
     def s_uuid(self, value):
-        # no estoy seguro si el ID está dividido en 16 bytes, o es directamente un numero de 16 bytes.
+        # I'm not sure if the ID is divided into 16 bytes, or is it directly a 16-byte number.
         self._s_uuid = tuple(value)
 
     @property
@@ -632,6 +641,7 @@ class Superblock:
                 f"Time of last check:                              {self.s_lastcheck}\n"
                 f"Time between checks:                             {self.s_checkinterval}\n"
                 f"OS where filesystem was created:                 {self.s_creator_os}\n"
+                f"Revision level:                                  {self.s_rev_level}\n"
                 f"Number of first nonreserved inode:               {self.s_first_ino}\n"
                 f"Size of on-disk inode structure:                 {self.s_inode_size}\n"
                 f"Block group number of this superblock:           {self.s_block_group_nr}\n"

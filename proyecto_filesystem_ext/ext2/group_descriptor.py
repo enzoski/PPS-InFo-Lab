@@ -1,9 +1,8 @@
-# Cosas a revisar (y creo que ya estaria completa esta clase):
-#  - ver si son necesarios los getters y setters de 'bg_pad' y 'bg_reserved'
-#    (yo diria de dejarlos, pero no mostrarlos en el __str__)
-#  - en el pdf de ext2/3, en esta seccion del group descriptor tambien habla
-#    sobre los bitmaps de bloques e inodos, pero creo que tocaré ese tema
-#    cuando haga la clase 'ext2' que englobe todo.
+# To check:
+#  - decide whether or not to show the attributes 'bg_pad' and 'bg_reserved' in '__str__'.
+#  - In an 'ext2/3' book, this section of the group descriptor also talks about
+#    data block and inode bitmaps, but I think I'll touch on that when I make
+#    the 'ext2' class that handles everything. EDIT: it was not necessary to parse them.
 
 import struct
 
