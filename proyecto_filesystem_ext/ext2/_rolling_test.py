@@ -42,7 +42,7 @@ raw_superblock = """
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-""".replace("\n", "").strip()
+""".replace("\n", "")
 superblock_data = bytes.fromhex(raw_superblock)
 
 # this data comes from doing:
@@ -60,22 +60,37 @@ sb = superblock.Superblock(superblock_data)
 print(sb)
 
 # Group descriptor parser (32 bytes)
-gd_data = struct.pack("<IIIHHHHIII", 3, 4, 5, 50, 20, 40, 0, 0, 0, 0)
+raw_gd = """
+03 00 00 00 04 00 00 00 05 00 00 00 32 00 14 00 28 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00
+""".replace("\n", "")
+gd_data = bytes.fromhex(raw_gd)
+# gd_data = struct.pack("<IIIHHHHIII", 3, 4, 5, 50, 20, 40, 0, 0, 0, 0)
 gd = group_descriptor.GroupDescriptor(gd_data)
 """Another way: gd = GroupDescriptor(bg_inode_bitmap=999, bg_free_inodes_count=7)"""
 print(gd)
 
 # Inode parser (128 bytes)
-inode_data = struct.pack("<HHIIIIIHHIIIIIIIIIIIIIIIIIIIIIIIII", 16876, 123, 2**20,
-                         0, 1613677029, 3600*3, 0, 987, 10, 700, 416, 0, 0, 0, 0,
-                         1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0)
+raw_inode = """
+ec 41 7b 00 00 00 10 00 00 00 00 00 e5 c1 2e 60 30 2a 00 00 00 00 00 00 db 03 0a
+00 bc 02 00 00 a0 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+""".replace("\n", "")
+inode_data = bytes.fromhex(raw_inode)
+# inode_data = struct.pack("<HHIIIIIHHIIIIIIIIIIIIIIIIIIIIIIIII", 16876, 123, 2**20,
+#                          0, 1613677029, 3600*3, 0, 987, 10, 700, 416, 0, 0, 0, 0,
+#                          1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0)
 ind = inode.Inode(inode_data)
 """Another way: ind = Inode(i_mode=0x8fff, i_atime=1614745834, i_flags=0b1000000000000)"""
 print(ind)
 
 # Directory entry parser (8 to n bytes)
-dentry_data = struct.pack("<IHBB", 67, 12, 3, 2)
-dentry_data += b'usr\0'
+raw_dentry = "43 00 00 00 0c 00 03 02 75 73 72 00"
+dentry_data = bytes.fromhex(raw_dentry)
+# dentry_data = struct.pack("<IHBB", 67, 12, 3, 2)
+# dentry_data += b'usr\0'
 de = directory_entry.DirectoryEntry(dentry_data)
 """Another way: de = DirectoryEntry(rec_len=30, file_type=1, name="föò.txt")"""
 print(de)
