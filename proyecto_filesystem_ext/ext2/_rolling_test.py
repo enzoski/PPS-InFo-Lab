@@ -1,6 +1,10 @@
+"""
+Testing the parsing of Ext2 structures.
+"""
+
 import superblock, group_descriptor, inode, directory_entry
 
-import struct
+#import struct
 
 # Superblock parser (1024 bytes)
 raw_superblock = """

@@ -1,7 +1,13 @@
+"""
+Testing the handling of a real Ext2 filesystem.
+"""
+
 import ext2
 
 # We open a storage device and position it at the start of a partition.
-# (the offset [sector number where the partition begins] would be given by the class MBR or GPT of haruspex)
+# (the offset [sector number where the partition begins] would be given
+#  by the class MBR or GPT of haruspex [https://github.com/bconstanzo/haruspex],
+#  or seeing it in some hex/disk editor like WinHex or HxD)
 # And the boot area, the superblock, the group descriptor table and the root inode are read.
 pendrive_partition = ext2.Ext2(r"\\.\PhysicalDrive1", 2048*512)
 
