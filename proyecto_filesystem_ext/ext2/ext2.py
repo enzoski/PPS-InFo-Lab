@@ -1,3 +1,7 @@
+"""
+This module handles reading from an Ext2 filesystem.
+"""
+
 # For the future: implement the writing capability, and the parser of the ext3's journal.
 
 # To check:
@@ -22,7 +26,12 @@ DISK_SECTOR_SIZE        = 512
 
 SB_STRUCT_SIZE          = 1024
 GD_STRUCT_SIZE          = 32
-INODE_STRUCT_SIZE       = 128
+# INODE_STRUCT_SIZE       = 128
+#   this value actually depends on the revision of ext2
+#       rev. 0: always 128 bytes
+#       rev. 1: must be a perfect power of 2 and must be smaller or equal to the block size
+#   anyway, at the moment I only parse the first 128 bytes of the inode (in 'Inode.py'), which is the base size of any inode
+#   but I need the exact value to correctly read the inodes from the disk (I get this value from the superblock, see Ext2's constructor).
 DENTRY_STRUCT_BASE_SIZE = 8
 
 # Encoding of filenames and paths
@@ -387,10 +396,13 @@ class Ext2:
         block_group_count = ceil(useful_blocks / self.superblock.s_blocks_per_group) # (*1)
         self.group_descriptors = [group_descriptor.GroupDescriptor(self.handle.read(GD_STRUCT_SIZE)) for i in range(block_group_count)] # (*2)
 
+        # we get the inode size, since it is not always 128 bytes.
+        self.INODE_STRUCT_SIZE = self.superblock.s_inode_size
+
         # The root directory always corresponds to inode No. 2 (inode_table[1]), which belongs to block group No. 1 (bg[0]).
         # (note: I don't use the 'read_inode' method cause for me in this case it is more descriptive to see the read_record's arguments)
         inode_table_block = self.group_descriptors[0].bg_inode_table
-        raw_root_inode_entry = self.read_record(inode_table_block, INODE_STRUCT_SIZE, offset=INODE_STRUCT_SIZE)
+        raw_root_inode_entry = self.read_record(inode_table_block, self.INODE_STRUCT_SIZE, offset=self.INODE_STRUCT_SIZE)
         root_inode = inode.Inode(raw_root_inode_entry)
         self.root = Directory(self, root_inode, name=self.superblock.s_volume_name)
 
@@ -482,7 +494,7 @@ class Ext2:
         first_inode_table_block = self.group_descriptors[block_group].bg_inode_table
         local_inode_index = (inode_number - 1) % self.superblock.s_inodes_per_group
         # and now we read it
-        raw_inode = self.read_record(first_inode_table_block, INODE_STRUCT_SIZE, offset=local_inode_index*INODE_STRUCT_SIZE)
+        raw_inode = self.read_record(first_inode_table_block, self.INODE_STRUCT_SIZE, offset=local_inode_index*self.INODE_STRUCT_SIZE)
         return raw_inode
 
     def _parse_direct_blocks(self, pointers):
