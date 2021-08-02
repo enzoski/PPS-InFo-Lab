@@ -2,15 +2,14 @@
 #  - I'm not sure whether to do certain parse on the 'setter' or the 'getter' (like the case of 'i_mode' or 'i_flags')
 #    -> FOR NOW, LET THEY REMAIN AS THEY ARE CURRENTLY.
 #  - check if the inode functions (defined at the end of the class) have to be implemented somewhere.
-#  - I have to see the issue of timestamps well, because doing a test on a pendrive that I formatted in ext2,
-#    when reading the creation date I realized that it was recorded/written in UTC-3, and then the 'datetime.fromtimestamp()'
-#    method, when converting to our time zone (UTC-3), it subtracts 3 hours, then it is inconsistent.
-#    If this is always the case (that when manipulating ext2 files the dates are written in the PC's time zone),
-#    I have to add a parameter to the '.fromtimestamp()' method, so that it does not convert it.
-#    But the point of this, is that when showing the dates, we will not know what time zone they belong to,
+#  - there is a small "issue" with the timestamps of files, because when doing a test on a pendrive that I formatted in ext2,
+#    when reading any date/time, I realized that it was recorded/written in UTC-3 (my time zone),
+#    and then the 'datetime.fromtimestamp()' method, when converting it to our time zone (UTC-3), it subtracts 3 hours,
+#    then date is inconsistent. If when manipulating files on ext2, the dates are always written in the PC's time zone,
+#    I have to add a parameter to the '.fromtimestamp()' method, so that it does not convert the date.
+#    But the point is that when showing the dates, we will not know what time zone they belong to,
 #    unless we know exactly the time zone of the PC where those dates were written.
 #    WHATEVER CRITERION WE CHOOSE, APPLY THE SAME TO THE 'superblock.py' DATES.
-#    And also, do something so that when a date is not defined (such as the elimination date), it does not show us 1/1/1970.
 
 import datetime
 import struct
@@ -69,7 +68,10 @@ class Inode:
     An inode corresponds to a single file, therefore there is one inode
     for each file (or directory) in the filesystem.
 
-    All inodes have the same size: 128 bytes.
+    All inodes have the same size: at least 128 bytes (which is what I parse; the fundamental part of an inode).
+      if revision of ext2 = 0 -> inode_size = 128 bytes (always)
+      if revision of ext2 > 0 -> 128 bytes <= inode_size <= block_size, and is a perfect power of 2
+    (the superblock is who knows the value of inode_size, block_size and the revision of ext2)
     """
     def __init__(self, data=bytes(128),
                  i_mode=None, i_uid=None, i_size=None, i_atime=None, i_ctime=None,
@@ -124,7 +126,7 @@ class Inode:
     def raw_data(self):
         """
         Bytes to be parsed.
-        (are the 128 bytes corresponding to the structure of an inode)
+        (are the 128 bytes corresponding to the base structure of an inode)
         """
         return self._raw_data
 
@@ -210,44 +212,61 @@ class Inode:
         """
         Last access timestamp
         """
-        return self._i_atime
+        # https://docs.python.org/3/library/datetime.html#datetime.datetime.timestamp
+        ts = self._i_atime if self._i_atime.timestamp() > 0. else None # if seconds elapsed since Unix epoch > 0.
+        return ts
 
     @i_atime.setter
     def i_atime(self, value):
-        self._i_atime = datetime.datetime.fromtimestamp(value) # DateTime object
+        # value: seconds elapsed since Unix epoch
+        #self._i_atime = datetime.datetime.fromtimestamp(value) # DateTime object
+        self._i_atime = datetime.datetime.fromtimestamp(value, tz=datetime.timezone.utc)
+        # last edit: for now I keep the date as it comes, I don't convert it to the current PC time zone.
+
+        # > According to what I researched, the dates should be written to the filesystem in UTC+0,
+        #   but on testing, they are written according to the computer's time zone, that is,
+        #   instead of converting the PC's time zone to UTC+0 and then do the subtraction
+        #   'system_datetime_utc0 - unix_epoch' to obtain the resulting seconds,
+        #   the subtraction is directly done with the current date of the PC.
 
     @property
     def i_ctime(self):
         """
-        Creation timestamp
+        Metadata last modification timestamp (inode)
         """
-        return self._i_ctime
+        ts = self._i_ctime if self._i_ctime.timestamp() > 0. else None
+        return ts
 
     @i_ctime.setter
     def i_ctime(self, value):
-        self._i_ctime = datetime.datetime.fromtimestamp(value)
+        #self._i_ctime = datetime.datetime.fromtimestamp(value)
+        self._i_ctime = datetime.datetime.fromtimestamp(value, tz=datetime.timezone.utc)
 
     @property
     def i_mtime(self):
         """
-        Last modification timestamp
+        Data last modification timestamp (file contents)
         """
-        return self._i_mtime
+        ts = self._i_mtime if self._i_mtime.timestamp() > 0. else None
+        return ts
 
     @i_mtime.setter
     def i_mtime(self, value):
-        self._i_mtime = datetime.datetime.fromtimestamp(value)
+        #self._i_mtime = datetime.datetime.fromtimestamp(value)
+        self._i_mtime = datetime.datetime.fromtimestamp(value, tz=datetime.timezone.utc)
 
     @property
     def i_dtime(self):
         """
         Deletion timestamp        
         """
-        return self._i_dtime
+        ts = self._i_dtime if self._i_dtime.timestamp() > 0. else None
+        return ts
 
     @i_dtime.setter
     def i_dtime(self, value):
-        self._i_dtime = datetime.datetime.fromtimestamp(value)
+        #self._i_dtime = datetime.datetime.fromtimestamp(value)
+        self._i_dtime = datetime.datetime.fromtimestamp(value, tz=datetime.timezone.utc)
 
     # ---------------------------------------------------------
 
@@ -383,21 +402,21 @@ class Inode:
 
     def __str__(self):
         return (
-                f"File type and access rights:                  {self.i_mode}\n"
-                f"Owner identifier:                             {self.i_uid}\n"
-                f"File length in bytes:                         {self.i_size}\n"
-                f"Time of last file access:                     {self.i_atime}\n"
-                f"Time that inode last changed (file creation): {self.i_ctime}\n"
-                f"Time that file contents last changed:         {self.i_mtime}\n"
-                f"Time of file deletion:                        {self.i_dtime}\n"
-                f"Group identifier:                             {self.i_gid}\n"
-                f"Hard links counter:                           {self.i_links_count}\n"
-                f"Number of data blocks of the file:            {self.i_blocks} (in units of 512 bytes)\n"
-                f"File flags:                                   {self.i_flags}\n"
-                f"Direct pointers to data blocks:               {self.i_block[0:12]}\n"
-                f"Pointer to simple indirect block:             {self.i_block[12]}\n"
-                f"Pointer to doubly-indirect block:             {self.i_block[13]}\n"
-                f"Pointer to triply-indirect block:             {self.i_block[14]}\n"
+                f"File type and access rights:          {self.i_mode}\n"
+                f"Owner identifier:                     {self.i_uid}\n"
+                f"File length in bytes:                 {self.i_size}\n"
+                f"Time of last file access:             {self.i_atime or 'Not defined'}\n"
+                f"Time that inode last changed:         {self.i_ctime or 'Not defined'}\n"
+                f"Time that file contents last changed: {self.i_mtime or 'Not defined'}\n"
+                f"Time of file deletion:                {self.i_dtime or 'Not defined'}\n"
+                f"Group identifier:                     {self.i_gid}\n"
+                f"Hard links counter:                   {self.i_links_count}\n"
+                f"Number of data blocks of the file:    {self.i_blocks} (in units of 512 bytes)\n"
+                f"File flags:                           {self.i_flags}\n"
+                f"Direct pointers to data blocks:       {self.i_block[0:12]}\n"
+                f"Pointer to simple indirect block:     {self.i_block[12]}\n"
+                f"Pointer to doubly-indirect block:     {self.i_block[13]}\n"
+                f"Pointer to triply-indirect block:     {self.i_block[14]}\n"
                 # some fields would be missing (which for the moment I decided not to show them).
             )
 
