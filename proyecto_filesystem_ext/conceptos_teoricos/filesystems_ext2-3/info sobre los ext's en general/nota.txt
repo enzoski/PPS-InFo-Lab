@@ -1,0 +1,2 @@
+Esta info la busqué cuando hice el apunte de tipo de datos de los timestamps, junto con toda la demás info:
+[\conceptos_teoricos\filesystems_ext2-3\estructura en general\fechas\tipo de datos de los timestamps]

@@ -1,0 +1,183 @@
+Microsoft Windows [Versión 10.0.19043.1110]
+(c) Microsoft Corporation. Todos los derechos reservados.
+
+C:\WINDOWS\system32>cd ..
+
+C:\Windows>cd ..
+
+C:\>cd users/enzo/desktop
+
+C:\Users\Enzo\Desktop>cd v4
+
+C:\Users\Enzo\Desktop\V4>dir
+ El volumen de la unidad C no tiene etiqueta.
+ El número de serie del volumen es: 163E-528F
+
+ Directorio de C:\Users\Enzo\Desktop\V4
+
+09/08/2021  02:53    <DIR>          .
+09/08/2021  02:53    <DIR>          ..
+15/04/2021  16:27             4.328 directory_entry.py
+01/05/2021  17:52            34.678 ext2.py
+19/04/2021  02:07             5.704 group_descriptor.py
+28/07/2021  19:40            17.143 inode.py
+28/07/2021  19:40            27.038 superblock.py
+28/07/2021  19:58             3.005 test_output_rt1.txt
+29/07/2021  18:05            12.894 test_output_rt2.txt
+30/07/2021  03:08             5.897 _rolling_test.py
+30/07/2021  02:49             1.875 _rolling_test_2.py
+09/08/2021  02:53    <DIR>          __pycache__
+               9 archivos        112.562 bytes
+               3 dirs  21.601.681.408 bytes libres
+
+C:\Users\Enzo\Desktop\V4>python
+Python 3.9.1 (tags/v3.9.1:1e5d33e, Dec  7 2020, 17:08:21) [MSC v.1927 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import ext2
+>>> DISK_SECTOR_SIZE = 512
+>>> pendrive_partition = ext2.Ext2(r"\\.\PhysicalDrive1", 2048 * DISK_SECTOR_SIZE)
+>>>
+>>> superbloque = pendrive_partition.superblock
+>>> superbloque
+<superblock.Superblock object at 0x00000225E37061C0>
+>>> superbloque.s_mtime
+datetime.datetime(2021, 4, 23, 18, 56, 17, tzinfo=datetime.timezone.utc)
+>>> fecha = superbloque.s_mtime
+>>> fecha
+datetime.datetime(2021, 4, 23, 18, 56, 17, tzinfo=datetime.timezone.utc)
+>>> print(fecha)
+2021-04-23 18:56:17+00:00
+>>> fecha.timestamp()
+1619204177.0 # VEMOS QUE LOS TIMESTAMPS SE MUESTRAN SIN LOS NANOSEGUNDOS, YA QUE NO PARSEO ESO.
+>>> print(superbloque.s_wtime)
+2021-04-23 19:04:12+00:00
+>>> superbloque.s_wtime.timestamp()
+1619204652.0 # ACA TAMPOCO (ORIGINALMENTE EXT2 NO TENIA LA CHANCE DE USAR NANOSEGUNDOS)
+>>> superbloque.s_feature_compat
+56
+>>> root = pendrive_partition.open('/')
+>>> root
+< Directory / >
+>>> print(root)
+< Directory / >
+---------------------------------FILES------------------------------------
+.                                                  (Directory)
+..                                                 (Directory)
+lost+found                                         (Directory)
+data_700mb.bin                                     (Regular file)
+.Trash-0                                           (Directory)
+--------------------------------------------------------------------------
+
+>>> archivo = pendrive_partition.open('/data_700mb.bin')
+>>> archivo
+< FileHandle for /data_700mb.bin >
+>>> print(archivo)
+< FileHandle for /data_700mb.bin >
+>>> print(archivo.show_inode())
+< File /data_700mb.bin >
+-----------------------------ASSOCIATED-INODE-----------------------------
+File type and access rights:          -rwxrwxrwx
+Owner identifier:                     0
+File length in bytes:                 734003200
+Time of last file access:             2021-04-23 19:00:11+00:00
+Time that inode last changed:         2021-04-23 19:00:11+00:00
+Time that file contents last changed: 2021-04-23 21:52:19+00:00
+Time of file deletion:                Not defined
+Group identifier:                     0
+Hard links counter:                   1
+Number of data blocks of the file:    1436412 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:       [1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1033, 1034, 1035]
+Pointer to simple indirect block:     785
+Pointer to doubly-indirect block:     786
+Pointer to triply-indirect block:     2995
+--------------------------------------------------------------------------
+
+>>> print(root.show_dentries())
+< Directory / >
+----------------------------DIRECTORY-ENTRIES-----------------------------
+Inode number:           2
+Directory entry length: 12
+Filename length:        1
+File type:              Directory
+Filename:               .
+
+Inode number:           2
+Directory entry length: 12
+Filename length:        2
+File type:              Directory
+Filename:               ..
+
+Inode number:           11
+Directory entry length: 20
+Filename length:        10
+File type:              Directory
+Filename:               lost+found
+
+Inode number:           14
+Directory entry length: 24
+Filename length:        14
+File type:              Regular file
+Filename:               data_700mb.bin
+
+Inode number:           274433
+Directory entry length: 1980
+Filename length:        8
+File type:              Directory
+Filename:               .Trash-0
+
+--------------------------------------------------------------------------
+
+# PERO SI LEEMOS UN INODO EN CRUDO (INODOS DE 256 BYTES), PODREMOS ENCONTRAR LOS NANOSEGUNDOS.
+>>> data = pendrive_partition.read_inode(14)
+>>> data
+b'\xff\x81\x00\x00\x00\x00\xc0+;\x19\x83`;\x19\x83`\x93A\x83`\x00\x00\x00\x00\x00\x00\x01\x00\xfc\xea\x15\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x04\x00\x00\x01\x04\x00\x00\x02\x04\x00\x00\x03\x04\x00\x00\x04\x04\x00\x00\x05\x04\x00\x00\x06\x04\x00\x00\x07\x04\x00\x00\x08\x04\x00\x00\t\x04\x00\x00\n\x04\x00\x00\x0b\x04\x00\x00\x11\x03\x00\x00\x12\x03\x00\x00\xb3\x0b\x00\x00[\x08f\xf8\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 \x00\x00\x00\xe8\x05\xfeB\xa0\xc7\xaf8\xe0\x82\x83\xcd\x1f\x19\x83`\xf8\x88\x83\xcd\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>> data[0x80:]
+b' \x00\x00\x00\xe8\x05\xfeB\xa0\xc7\xaf8\xe0\x82\x83\xcd\x1f\x19\x83`\xf8\x88\x83\xcd\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>> nanos_ctime = data[0x84:0x88]
+>>> nanos_mtime = data[0x88:0x8C]
+>>> nanos_atime = data[0x8C:0x90]
+>>> creation_time = data[0x90:0x94]
+>>> nanos_creation_time = data[0x94:0x98]
+>>>
+>>> nanos_ctime
+b'\xe8\x05\xfeB'
+>>> nanos_mtime
+b'\xa0\xc7\xaf8'
+>>> nanos_atime
+b'\xe0\x82\x83\xcd'
+>>> len(nanos_atime)
+4
+>>> nanos_atime[3]
+205
+>>> nanos_atime[4]
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+IndexError: index out of range
+>>>
+>>> creation_time
+b'\x1f\x19\x83`'
+>>>
+>>> from struct import unpack
+>>> nanos_atime = unpack('<I', nanos_atime)
+>>> nanos_atime
+(3447948000,)
+>>> import datetime
+>>> fecha_nanos = datetime.datetime.fromtimestamp(nanos_atime[0], tz=datetime.timezone.utc)
+>>> print(fecha_nanos)
+2079-04-05 19:20:00+00:00
+>>> fecha_nanos.timestamp()
+3447948000.0
+>>>
+>>> crtime = unpack('<I', creation_time)
+>>> crtime[0]
+1619204383
+>>> fecha_creacion = datetime.datetime.fromtimestamp(crtime[0], tz=datetime.timezone.utc)
+>>> fecha_creacion
+datetime.datetime(2021, 4, 23, 18, 59, 43, tzinfo=datetime.timezone.utc)
+>>> print(fecha_creacion)
+2021-04-23 18:59:43+00:00
+>>>
+>>>
+>>>
+>>>
