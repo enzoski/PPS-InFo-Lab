@@ -1,0 +1,956 @@
+>>> import haruspex
+>>> fd = open(r"\\.\PhysicalDrive1", "rb")
+>>> data = fd.read(512)
+>>> mbr = haruspex.mbr.Table(data)
+>>> mbr
+< MBR Partition Table @ 2196543224752 >
+    < Partition - Unknown - boot: False @ 2048 of 15667200 >
+>>> mbr.partitions
+[< Partition - Unknown - boot: False @ 2048 of 15667200 >]
+>>> part = mbr.partitions[0]
+>>> part
+< Partition - Unknown - boot: False @ 2048 of 15667200 >
+>>> part.start
+2048
+>>> fs = haruspex.ext2.ext2.Ext2(r"\\.\PhysicalDrive1", part.start * 512)
+>>> fs
+< ext2 @ 1048576 of \\.\PhysicalDrive1>
+
+>>> for gd in fs.group_descriptors[10:14]:
+...     print(gd)
+...
+Block number of block bitmap:            81921
+Block number of inode bitmap:            81922
+Block number of first inode table block: 81923
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            90113
+Block number of inode bitmap:            90114
+Block number of first inode table block: 90115
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            98305
+Block number of inode bitmap:            98306
+Block number of first inode table block: 98307
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            106497
+Block number of inode bitmap:            106498
+Block number of first inode table block: 106499
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+>>> for gd in fs.group_descriptors[14:18]:
+...     print(gd)
+...
+Block number of block bitmap:            114689
+Block number of inode bitmap:            114690
+Block number of first inode table block: 114691
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            122881
+Block number of inode bitmap:            122882
+Block number of first inode table block: 122883
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            131073
+Block number of inode bitmap:            131074
+Block number of first inode table block: 131075
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            139265
+Block number of inode bitmap:            139266
+Block number of first inode table block: 139267
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+>>>
+>>> for gd in fs.group_descriptors[0:10]:
+...     print(gd)
+...
+Block number of block bitmap:            32
+Block number of inode bitmap:            33
+Block number of first inode table block: 34
+Number of free blocks in the group:      5006
+Number of free inodes in the group:      2030
+Number of directories in the group:      2
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            8224
+Block number of inode bitmap:            8225
+Block number of first inode table block: 8226
+Number of free blocks in the group:      6450
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            16385
+Block number of inode bitmap:            16386
+Block number of first inode table block: 16387
+Number of free blocks in the group:      7033
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            24608
+Block number of inode bitmap:            24609
+Block number of first inode table block: 24610
+Number of free blocks in the group:      7903
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            32769
+Block number of inode bitmap:            32770
+Block number of first inode table block: 32771
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            40992
+Block number of inode bitmap:            40993
+Block number of first inode table block: 40994
+Number of free blocks in the group:      7903
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            49153
+Block number of inode bitmap:            49154
+Block number of first inode table block: 49155
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            57376
+Block number of inode bitmap:            57377
+Block number of first inode table block: 57378
+Number of free blocks in the group:      7903
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            65537
+Block number of inode bitmap:            65538
+Block number of first inode table block: 65539
+Number of free blocks in the group:      7934
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+Block number of block bitmap:            73760
+Block number of inode bitmap:            73761
+Block number of first inode table block: 73762
+Number of free blocks in the group:      7903
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+>>>
+>>>
+>>> print(fs)
+< ext2 Filesystem:
+Number of block groups:                          957 (the last one has 2047 blocks assigned)
+Total number of inodes:                          1959936
+Filesystem size in blocks:                       7833600
+Number of reserved blocks:                       391680
+Free blocks counter:                             7580959
+Free inodes counter:                             1959911
+Number of first useful block:                    1
+Block size:                                      1024
+Fragment size:                                   1024
+Number of blocks per group:                      8192
+Number of fragments per group:                   8192
+Number of inodes per group:                      2048
+Time of last mount operation:                    2021-04-07 23:10:40+00:00
+Time of last write operation:                    2021-04-07 23:25:45+00:00
+Mount operations counter:                        2
+Magic signature:                                 0xef53
+Status flag:                                     the filesystem was cleanly unmounted
+Time of last check:                              2021-03-01 19:48:38+00:00
+Time between checks:                             1970-06-30 00:00:00+00:00
+OS where filesystem was created:                 Linux
+Revision level:                                  1
+Number of first nonreserved inode:               11
+Size of on-disk inode structure:                 128
+Block group number of this superblock:           0
+Filesystem identifier:                           (223-188-218-4-237-14-215-1-192-184-218-4-237-14-215-1)
+Volume name:                                     pendrive_ext2
+Pathname of last mount point:                    /mnt/sdc1
+Number of blocks to preallocate:                 0
+Number of blocks to preallocate for directories: 0
+>
+
+>>> print(fs.group_descriptors[-1])
+Block number of block bitmap:            7831553
+Block number of inode bitmap:            7831554
+Block number of first inode table block: 7831555
+Number of free blocks in the group:      1789
+Number of free inodes in the group:      2048
+Number of directories in the group:      0
+Alignment to word:                       4
+Nulls to pad out 32 bytes:               (0, 0, 0)
+
+>>> root_dir = fs.open("/")
+>>> root_dir
+< Directory pendrive_ext2 >
+>>> print(root_dir)
+< Directory pendrive_ext2 >
+---------------------------------FILES------------------------------------
+.                                                  (Directory)
+..                                                 (Directory)
+lost+found                                         (Directory)
+Captura de pantalla de 2021-03-03 13-35-56.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-36-35.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-38-58.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-45-02.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-54-03.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-55-01.png     (Regular file)
+comando-ls-a-l.png                                 (Regular file)
+archivos de texto                                  (Directory)
+--------------------------------------------------------------------------
+
+>>> print(root_dir.show_dentries)
+<bound method Directory.show_dentries of < Directory pendrive_ext2 >>
+>>> print(root_dir.show_dentries())
+< Directory pendrive_ext2 >
+----------------------------DIRECTORY-ENTRIES-----------------------------
+Inode number:           2
+Directory entry length: 12
+Filename length:        1
+File type:              Directory
+Filename:               .
+
+Inode number:           2
+Directory entry length: 12
+Filename length:        2
+File type:              Directory
+Filename:               ..
+
+Inode number:           11
+Directory entry length: 20
+Filename length:        10
+File type:              Directory
+Filename:               lost+found
+
+Inode number:           12
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-35-56.png
+
+Inode number:           13
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-36-35.png
+
+Inode number:           14
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-38-58.png
+
+Inode number:           15
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-45-02.png
+
+Inode number:           16
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-54-03.png
+
+Inode number:           17
+Directory entry length: 56
+Filename length:        46
+File type:              Regular file
+Filename:               Captura de pantalla de 2021-03-03 13-55-01.png
+
+Inode number:           18
+Directory entry length: 56
+Filename length:        18
+File type:              Regular file
+Filename:               comando-ls-a-l.png
+
+Inode number:           247809
+Directory entry length: 588
+Filename length:        17
+File type:              Directory
+Filename:               archivos de texto
+
+--------------------------------------------------------------------------
+
+>>> print(root_dir.show_inode())
+< Directory pendrive_ext2 >
+-----------------------------ASSOCIATED-INODE-----------------------------
+File type and access rights:                  drwxr-xr-x
+Owner identifier:                             0
+File length in bytes:                         1024
+Time of last file access:                     2021-03-01 16:48:38
+Time that inode last changed (file creation): 2021-04-07 20:15:55
+Time that file contents last changed:         2021-04-07 20:15:55
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           4
+Number of data blocks of the file:            2 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [290, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+--------------------------------------------------------------------------
+
+>>> fs.read_block(290)
+b'\x02\x00\x00\x00\x0c\x00\x01\x02.\x00\x00\x00\x02\x00\x00\x00\x0c\x00\x02\x02..\x00\x00\x0b\x00\x00\x00\x14\x00\n\x02lost+found\x00\x00\x0c\x00\x00\x008\x00.\x01Captura de pantalla de 2021-03-03 13-35-56.png\x00\x00\r\x00\x00\x008\x00.\x01Captura de pantalla de 2021-03-03 13-36-35.png\x00\x00\x0e\x00\x00\x008\x00.\x01Captura de pantalla de 2021-03-03 13-38-58.png\x00\x00\x0f\x00\x00\x008\x00.\x01Captura de pantalla de 2021-03-03 13-45-02.png\x00\x00\x10\x00\x00\x008\x00.\x01Captura de pantalla de 2021-03-03 13-54-03.png\x00\x00\x11\x00\x00\x008\x00.\x01Captura de pantalla de 2021-03-03 13-55-01.png\x00\x00\x12\x00\x00\x008\x00\x12\x01comando-ls-a-l.png\x00\x00\x01\xc8\x03\x00\x1c\x00\x13\x02Carpeta sin t\xc3\xadtulo\x00\x01\xc8\x03\x00L\x02\x11\x02archivos de texto\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>>
+>>> fs.read_block(0x03c801)
+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>> fs.read_block(247809)
+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>>
+>>> f1 = fs.open("/archivos de texto")
+>>> f1
+< Directory pendrive_ext2/archivos de texto >
+>>> print(f1)
+< Directory pendrive_ext2/archivos de texto >
+---------------------------------FILES------------------------------------
+.                                                  (Directory)
+..                                                 (Directory)
+texto-simple.txt                                   (Regular file)
+mas archivos                                       (Directory)
+--------------------------------------------------------------------------
+
+>>> print(f1.show_dentries)
+<bound method Directory.show_dentries of < Directory pendrive_ext2/archivos de texto >>
+>>> print(f1.show_dentries())
+< Directory pendrive_ext2/archivos de texto >
+----------------------------DIRECTORY-ENTRIES-----------------------------
+Inode number:           247809
+Directory entry length: 12
+Filename length:        1
+File type:              Directory
+Filename:               .
+
+Inode number:           2
+Directory entry length: 12
+Filename length:        2
+File type:              Directory
+Filename:               ..
+
+Inode number:           247811
+Directory entry length: 28
+Filename length:        16
+File type:              Regular file
+Filename:               texto-simple.txt
+
+Inode number:           247810
+Directory entry length: 972
+Filename length:        12
+File type:              Directory
+Filename:               mas archivos
+
+--------------------------------------------------------------------------
+
+>>> fs.read_inode(0)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 483, in read_inode
+    raise TypeError("the inode number must be >= 1 !")
+TypeError: the inode number must be >= 1 !
+>>>
+>>> fs.read_inode(1)
+b'\x00\x00\x00\x00\x00\x00\x00\x00\x16E=`\x16E=`\x16E=`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(1)))
+File type and access rights:                  u---------
+Owner identifier:                             0
+File length in bytes:                         0
+Time of last file access:                     2021-03-01 16:48:38
+Time that inode last changed (file creation): 2021-03-01 16:48:38
+Time that file contents last changed:         2021-03-01 16:48:38
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           0
+Number of data blocks of the file:            0 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(2)))
+File type and access rights:                  drwxr-xr-x
+Owner identifier:                             0
+File length in bytes:                         1024
+Time of last file access:                     2021-03-01 16:48:38
+Time that inode last changed (file creation): 2021-04-07 20:15:55
+Time that file contents last changed:         2021-04-07 20:15:55
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           4
+Number of data blocks of the file:            2 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [290, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(3)))
+File type and access rights:                  u---------
+Owner identifier:                             0
+File length in bytes:                         0
+Time of last file access:                     1969-12-31 21:00:00
+Time that inode last changed (file creation): 1969-12-31 21:00:00
+Time that file contents last changed:         1969-12-31 21:00:00
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           0
+Number of data blocks of the file:            0 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(4)))
+File type and access rights:                  u---------
+Owner identifier:                             0
+File length in bytes:                         0
+Time of last file access:                     1969-12-31 21:00:00
+Time that inode last changed (file creation): 1969-12-31 21:00:00
+Time that file contents last changed:         1969-12-31 21:00:00
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           0
+Number of data blocks of the file:            0 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(5)))
+File type and access rights:                  u---------
+Owner identifier:                             0
+File length in bytes:                         0
+Time of last file access:                     1969-12-31 21:00:00
+Time that inode last changed (file creation): 1969-12-31 21:00:00
+Time that file contents last changed:         1969-12-31 21:00:00
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           0
+Number of data blocks of the file:            0 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(6)))
+File type and access rights:                  u---------
+Owner identifier:                             0
+File length in bytes:                         0
+Time of last file access:                     1969-12-31 21:00:00
+Time that inode last changed (file creation): 1969-12-31 21:00:00
+Time that file contents last changed:         1969-12-31 21:00:00
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           0
+Number of data blocks of the file:            0 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(7)))
+File type and access rights:                  u---------
+Owner identifier:                             0
+File length in bytes:                         0
+Time of last file access:                     1969-12-31 21:00:00
+Time that inode last changed (file creation): 1969-12-31 21:00:00
+Time that file contents last changed:         1969-12-31 21:00:00
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           0
+Number of data blocks of the file:            0 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(10)))
+File type and access rights:                  u---------
+Owner identifier:                             0
+File length in bytes:                         0
+Time of last file access:                     1969-12-31 21:00:00
+Time that inode last changed (file creation): 1969-12-31 21:00:00
+Time that file contents last changed:         1969-12-31 21:00:00
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           0
+Number of data blocks of the file:            0 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(11)))
+File type and access rights:                  drwx------
+Owner identifier:                             0
+File length in bytes:                         1024
+Time of last file access:                     2021-03-01 16:48:38
+Time that inode last changed (file creation): 2021-03-01 16:48:38
+Time that file contents last changed:         2021-03-01 16:48:38
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           2
+Number of data blocks of the file:            2 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [291, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> fs.read_block(291)
+b'\x0b\x00\x00\x00\x0c\x00\x01\x02.\x00\x00\x00\x02\x00\x00\x00\x0c\x00\x02\x02..\x00\x00\x00\x00\x00\x00\xe8\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(12)))
+File type and access rights:                  -rw-r--r--
+Owner identifier:                             0
+File length in bytes:                         1021860
+Time of last file access:                     2021-03-03 10:44:48
+Time that inode last changed (file creation): 2021-03-03 10:44:48
+Time that file contents last changed:         2021-03-03 10:36:12
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           1
+Number of data blocks of the file:            2006 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524]
+Pointer to simple indirect block:             292
+Pointer to doubly-indirect block:             293
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(13)))
+File type and access rights:                  -rw-r--r--
+Owner identifier:                             0
+File length in bytes:                         927839
+Time of last file access:                     2021-03-03 10:45:08
+Time that inode last changed (file creation): 2021-03-03 10:45:08
+Time that file contents last changed:         2021-03-03 10:36:38
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           1
+Number of data blocks of the file:            1824 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540]
+Pointer to simple indirect block:             2023
+Pointer to doubly-indirect block:             2024
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(14)))
+File type and access rights:                  -rw-r--r--
+Owner identifier:                             0
+File length in bytes:                         672425
+Time of last file access:                     2021-03-03 10:45:11
+Time that inode last changed (file creation): 2021-03-03 10:45:11
+Time that file contents last changed:         2021-03-03 10:39:00
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           1
+Number of data blocks of the file:            1322 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556]
+Pointer to simple indirect block:             300
+Pointer to doubly-indirect block:             3436
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(19)))
+File type and access rights:                  u---------
+Owner identifier:                             0
+File length in bytes:                         0
+Time of last file access:                     1969-12-31 21:00:00
+Time that inode last changed (file creation): 1969-12-31 21:00:00
+Time that file contents last changed:         1969-12-31 21:00:00
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           0
+Number of data blocks of the file:            0 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(18)))
+File type and access rights:                  -rw-r--r--
+Owner identifier:                             0
+File length in bytes:                         103892
+Time of last file access:                     2021-03-03 11:07:16
+Time that inode last changed (file creation): 2021-03-03 11:07:16
+Time that file contents last changed:         2021-03-03 11:05:00
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           1
+Number of data blocks of the file:            206 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [4113, 4114, 4115, 4116, 4117, 4118, 4119, 4120, 4121, 4122, 4123, 4124]
+Pointer to simple indirect block:             3056
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>>
+>>> fs._parse_indirect_1_block(3056)
+[4125, 4126, 4127, 4128, 16753, 16754, 16755, 16756, 16757, 16758, 16759, 16760, 16761, 16762, 16763, 16764, 16765, 16766, 16767, 16768, 17377, 17378, 17379, 17380, 17381, 17382, 17383, 17384, 17385, 17386, 17387, 17388, 17389, 17390, 17391, 17392, 17393, 17394, 17395, 17396, 17397, 17398, 17399, 17400, 17401, 17402, 17403, 17404, 17405, 17406, 17407, 17408, 17786, 17787, 17788, 17789, 17790, 17791, 17792, 17793, 17794, 17795, 17796, 17797, 17798, 17799, 17800, 17801, 17802, 17803, 17804, 17805, 17806, 17807, 17808, 17809, 17810, 17811, 17812, 17813, 17814, 17815, 17816, 17817, 17818, 17819, 17820, 17821, 17822, 17823]
+>>> fs.read_block(17823)
+b'\xc9\xd6\x96\x1c\x9d\x8eo\x93\x93\xf9\xf8\x8ee\xbd\x8dm\xc7\xba#\x91\xc2\xb1\x1f\x12\xca\xb4\xafe\xf1\xdb\x9b7\x88\xb9\x90\x85\xd2\xc1\n\xdf\x16v\x85\x9e\x01iN<W\x0e\xa7r\xe3T&NU\xad\xa9\xdd\xde\x01M\x8e\x8e\x7f\x7fL`\xef\xe71\xc64[\xe6E\x12v,\rk;+l]dl_p\xb3H>9\x19ZV\x0e\xba\xcc\x99-\x89d%k\x90)$\xc4^\xca\xb6h\xa1\x1ek;+<\xea\xa8\x88<mh\xd0\xfa6\xb73\xfe_\x10\x04A\x10\x04A\x10\xfe\xcb\xec\xec\x8av\xdc\x98\xda&Y\xbf~\xbd~\xf4\xe8\xd1\x0f#&\x8b\xd5\xb3\xb6f\xbb\x8f\x0f\xf6R)\xbb\xd2\xd3\xb9\x91\x97GM\x85\x82\xeevv\xb4\x8b\x88\xe0Zn.Wj\xd5\xc2]&\xa3gd$\x81&z\xf1\x9ef2k)o\x076""(\x9d\xf5\x93\xc3\x1fu8\x8f]<\x0fS\xe8\xa5\xe0R\xd34\xac\xdb\xf4!D"\x08\x82 \x08\x82 \x08\xa6\xad]\xbb\x96\xb6m\xdb\x1a_\x9f=\x17BpHH\xa14M\x1b5\xa2I\xe3F\xc6\xd7\x81\x81\x81\x96\r\x7f}\xd8.\xe6\xe4\xd0."\x82\x99..\xf4\xb0\xb7\xa7\x97\xbd=\t\x1a\r\x1bSS\x0b=\x1fR0M\x93\xa3ca\xd3\xb3\x8f:\x0c\xa3\xc7-\x1eA\x10\x04A\x10\x04A\x10\x8aW\xd0x\x0c\x8b0t\x08\xd5\xaaQ\xb3P\x83\xb2\xc0c\xdd\xa8\x04H\xd0h\x98\x1d\x1f\xcf\xecx\xd3\xcfW\x14\x04A\x10\x04A\x10\x04A\x10\x1e\x8c&\x8d\x1b\x99lH\xde\xeb\xb1oT\x96\xc6?,\xecQ\x87 \x08\x82 \x08\x82 \x08\x82\xf0\xd4z\xe2\x1b\x95\x82\xf0$\x10\xf3%\x05A\x10\x04A\x10\x84\xff*\xc9\xfa\xf5\xeb-{\xa6\x86 \x08\x82 \x08\x82 \x08\x82 \xe4\xfb?\x8fQ\xcb\xadE\x81\xe3u\x00\x00\x00\x00IEND\xaeB`\x82\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>>
+>>> dir = fs.open("/archivos de texto")
+>>> print(dir)
+< Directory pendrive_ext2/archivos de texto >
+---------------------------------FILES------------------------------------
+.                                                  (Directory)
+..                                                 (Directory)
+texto-simple.txt                                   (Regular file)
+mas archivos                                       (Directory)
+--------------------------------------------------------------------------
+
+>>> dir2 = fs.open("/archivos de texto/mas archivos")
+>>> dir2
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+>>> print(dir2)
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+---------------------------------FILES------------------------------------
+.                                                  (Directory)
+..                                                 (Directory)
+texto-8k.txt                                       (Regular file)
+texto-4k.txt                                       (Regular file)
+texto-2k.txt                                       (Regular file)
+texto-1k.txt                                       (Regular file)
+--------------------------------------------------------------------------
+
+>>> print(dir2.show_dentries())
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+----------------------------DIRECTORY-ENTRIES-----------------------------
+Inode number:           247810
+Directory entry length: 12
+Filename length:        1
+File type:              Directory
+Filename:               .
+
+Inode number:           247809
+Directory entry length: 12
+Filename length:        2
+File type:              Directory
+Filename:               ..
+
+Inode number:           247812
+Directory entry length: 20
+Filename length:        12
+File type:              Regular file
+Filename:               texto-8k.txt
+
+Inode number:           247813
+Directory entry length: 20
+Filename length:        12
+File type:              Regular file
+Filename:               texto-4k.txt
+
+Inode number:           247814
+Directory entry length: 20
+Filename length:        12
+File type:              Regular file
+Filename:               texto-2k.txt
+
+Inode number:           247815
+Directory entry length: 940
+Filename length:        12
+File type:              Regular file
+Filename:               texto-1k.txt
+
+--------------------------------------------------------------------------
+
+>>> fs.read_inode(247812)
+b'\xa4\x81\x00\x00\x00 \x00\x00]=n`]=n`\x83;n`\x00\x00\x00\x00\x00\x00\x01\x00\x10\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01$\x0f\x00\x02$\x0f\x00\x03$\x0f\x00\x04$\x0f\x00\x05$\x0f\x00\x06$\x0f\x00\x07$\x0f\x00\x08$\x0f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x97[\x8fQ\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>> print(haruspex.ext2.inode.Inode(fs.read_inode(247812)))
+File type and access rights:                  -rw-r--r--
+Owner identifier:                             0
+File length in bytes:                         8192
+Time of last file access:                     2021-04-07 20:16:45
+Time that inode last changed (file creation): 2021-04-07 20:16:45
+Time that file contents last changed:         2021-04-07 20:08:51
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           1
+Number of data blocks of the file:            16 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [992257, 992258, 992259, 992260, 992261, 992262, 992263, 992264, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+
+>>> print(dir2.show_inode())
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+-----------------------------ASSOCIATED-INODE-----------------------------
+File type and access rights:                  drwxr-xr-x
+Owner identifier:                             0
+File length in bytes:                         1024
+Time of last file access:                     2021-04-07 20:16:29
+Time that inode last changed (file creation): 2021-04-07 20:16:45
+Time that file contents last changed:         2021-04-07 20:16:45
+Time of file deletion:                        1969-12-31 21:00:00
+Group identifier:                             0
+Hard links counter:                           2
+Number of data blocks of the file:            2 (in units of 512 bytes)
+File flags:
+Direct pointers to data blocks:               [991492, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Pointer to simple indirect block:             0
+Pointer to doubly-indirect block:             0
+Pointer to triply-indirect block:             0
+--------------------------------------------------------------------------
+
+>>> fs.read_block(991492)
+b'\x02\xc8\x03\x00\x0c\x00\x01\x02.\x00\x00\x00\x01\xc8\x03\x00\x0c\x00\x02\x02..\x00\x00\x04\xc8\x03\x00\x14\x00\x0c\x01texto-8k.txt\x05\xc8\x03\x00\x14\x00\x0c\x01texto-4k.txt\x06\xc8\x03\x00\x14\x00\x0c\x01texto-2k.txt\x07\xc8\x03\x00\xac\x03\x0c\x01texto-1k.txt\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+>>>
+>>> f1 = fs.open("/archivos de texto/mas archivos/texto-8k.txt")
+>>> f1
+< FileHandle for pendrive_ext2/archivos de texto/mas archivos/texto-8k.txt >
+>>> print(f1)
+< FileHandle for pendrive_ext2/archivos de texto/mas archivos/texto-8k.txt >
+>>>
+>>> f1.tell()
+0
+>>> f1.read()
+b'holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+>>> f1.tell()
+8192
+>>> 8*2**10
+8192
+>>>
+>>> f1.close()
+True
+>>> f1.close()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 234, in close
+    raise ValueError("I/O operation on closed file.")
+ValueError: I/O operation on closed file.
+>>> f1.open=True
+>>> f1.seek(1024*7)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 297, in seek
+    raise ValueError("I/O operation on closed file.")
+ValueError: I/O operation on closed file.
+>>> f1.open
+True
+>>> f1.close
+<bound method FileHandle.close of < FileHandle for pendrive_ext2/archivos de texto/mas archivos/texto-8k.txt >>
+>>> f1._open
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'FileHandle' object has no attribute '_open'
+>>>
+>>> f1 = fs.open("/archivos de texto/mas archivos/texto-8k.txt")
+>>> f1.seek(1024*7)
+7168
+>>> f1.read()
+b'aa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+>>> f1.tell()
+8192
+>>> 8192-7168
+1024
+>>> f1.read()
+b''
+>>> f1.seek(123123213213)
+8192
+>>> f1.read()
+b''
+>>> f1.seek(-1)
+0
+>>> fs.read_block(992264)
+b'aa\nholaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+>>>
+>>> dir = fs.open("/asd")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 584, in open
+    raise FileNotFoundError(f"No such file or directory {obj.path}/{name.decode(ENCODING)}")
+FileNotFoundError: No such file or directory pendrive_ext2/asd
+>>>
+>>> dir = fs.open("/archivos de texto/asd")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 584, in open
+    raise FileNotFoundError(f"No such file or directory {obj.path}/{name.decode(ENCODING)}")
+FileNotFoundError: No such file or directory pendrive_ext2/archivos de texto/asd
+>>>
+>>> dir = fs.open("/archivos de texto/texto-simple.txt/asd")
+Traceback (most recent call last):
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 568, in open
+    files = {f.name:f.inode for f in obj.files}
+AttributeError: 'FileHandle' object has no attribute 'files'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 572, in open
+    raise FileNotFoundError(f"{obj.path} is not a Directory!") # we will see this exception by console.
+FileNotFoundError: pendrive_ext2/archivos de texto/texto-simple.txt is not a Directory!
+>>>
+>>> dir = fs.open("/archivos de texto/texto-simple.txt/mas archivos")
+Traceback (most recent call last):
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 568, in open
+    files = {f.name:f.inode for f in obj.files}
+AttributeError: 'FileHandle' object has no attribute 'files'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 572, in open
+    raise FileNotFoundError(f"{obj.path} is not a Directory!") # we will see this exception by console.
+FileNotFoundError: pendrive_ext2/archivos de texto/texto-simple.txt is not a Directory!
+>>>
+>>> dir = fs.open("/archivos de texto/")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 584, in open
+    raise FileNotFoundError(f"No such file or directory {obj.path}/{name.decode(ENCODING)}")
+FileNotFoundError: No such file or directory pendrive_ext2/archivos de texto/
+>>>
+>>> dir = fs.open("asdasdasd/archivos de texto")
+>>> dir
+< Directory pendrive_ext2/archivos de texto >
+>>> print(dir)
+< Directory pendrive_ext2/archivos de texto >
+---------------------------------FILES------------------------------------
+.                                                  (Directory)
+..                                                 (Directory)
+texto-simple.txt                                   (Regular file)
+mas archivos                                       (Directory)
+--------------------------------------------------------------------------
+
+>>> dir = fs.open("asdasdasd/")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 584, in open
+    raise FileNotFoundError(f"No such file or directory {obj.path}/{name.decode(ENCODING)}")
+FileNotFoundError: No such file or directory pendrive_ext2/
+>>>
+>>> dir = fs.open("asdasdasd")
+>>> dir
+< Directory pendrive_ext2 >
+>>> print(dir)
+< Directory pendrive_ext2 >
+---------------------------------FILES------------------------------------
+.                                                  (Directory)
+..                                                 (Directory)
+lost+found                                         (Directory)
+Captura de pantalla de 2021-03-03 13-35-56.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-36-35.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-38-58.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-45-02.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-54-03.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-55-01.png     (Regular file)
+comando-ls-a-l.png                                 (Regular file)
+archivos de texto                                  (Directory)
+--------------------------------------------------------------------------
+
+>>> dir = fs.open("archivos de texto")
+>>> dir
+< Directory pendrive_ext2 >
+>>> print(dir)
+< Directory pendrive_ext2 >
+---------------------------------FILES------------------------------------
+.                                                  (Directory)
+..                                                 (Directory)
+lost+found                                         (Directory)
+Captura de pantalla de 2021-03-03 13-35-56.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-36-35.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-38-58.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-45-02.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-54-03.png     (Regular file)
+Captura de pantalla de 2021-03-03 13-55-01.png     (Regular file)
+comando-ls-a-l.png                                 (Regular file)
+archivos de texto                                  (Directory)
+--------------------------------------------------------------------------
+
+>>> dir = fs.open("archivos de texto/")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 584, in open
+    raise FileNotFoundError(f"No such file or directory {obj.path}/{name.decode(ENCODING)}")
+FileNotFoundError: No such file or directory pendrive_ext2/
+>>> dir = fs.open("archivos de texto/mas archivos")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Enzo\Documents\_probando_haruspex_ext2\haruspex\ext2\ext2.py", line 584, in open
+    raise FileNotFoundError(f"No such file or directory {obj.path}/{name.decode(ENCODING)}")
+FileNotFoundError: No such file or directory pendrive_ext2/mas archivos
+>>>
+>>> dir = fs.open(/"archivos de texto/mas archivos")
+  File "<stdin>", line 1
+    dir = fs.open(/"archivos de texto/mas archivos")
+                  ^
+SyntaxError: invalid syntax
+>>> dir = fs.open("/archivos de texto/mas archivos")
+>>> dir
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+>>> print(dir)
+< Directory pendrive_ext2/archivos de texto/mas archivos >
+---------------------------------FILES------------------------------------
+.                                                  (Directory)
+..                                                 (Directory)
+texto-8k.txt                                       (Regular file)
+texto-4k.txt                                       (Regular file)
+texto-2k.txt                                       (Regular file)
+texto-1k.txt                                       (Regular file)
+--------------------------------------------------------------------------
