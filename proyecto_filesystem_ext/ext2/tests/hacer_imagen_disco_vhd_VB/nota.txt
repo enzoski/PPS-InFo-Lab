@@ -1,0 +1,8 @@
+Con el link 1 y 2 vi como sería para convertir un disco en una imagen .vhd
+Pero me lo convertia de una forma rara, porque probé con el pendrive de 8gb y el archivo .vhd resultante pesaba unos 2GB.
+Entonces con el link 3 y 4, me di cuenta que habia varios 'modos' de convertir, entre ellos dinamico y fijo (por defecto se hace en 'dinamico).
+Y fijandome la documentación de virtual box: https://www.virtualbox.org/manual/ch08.html#vboxmanage-convertfromraw, le agregué al comando la variante 'Fixed' y ahí sí me hizo una copia identica, como si lo hubiera clonado.
+
+(Hice esto para hacer una imagen del pendrive y probar sobre ese archivo mi 'driver' de ext2, asi ya no necesito conectar el pendrive, ni usar el modo administrador en la consola de Windows)
+
+(también está la opcion de usar 'disk2vhd', pero parece que no hace una copia tan fiel, la mbr no tiene pinta de mbr, y el comienzo de la particion no tiene el superbloque luego del boot area...)
