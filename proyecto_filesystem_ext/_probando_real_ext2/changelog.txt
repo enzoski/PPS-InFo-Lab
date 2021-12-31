@@ -27,3 +27,5 @@ Nota: al final, el journal de ext3 quedó pendiente de parsear.
 Además, en los 'getters' de timestamps ahora verifico la validez de la fecha que almacenamos con el 'setter'; si es > 1/1/1970 entonces devuelvo el objeto DateTime, sino devuelvo 'None'. Y en el gran 'print' de las estructuras de inodo y superbloque, las fechas 'None' se muestran como 'Not defined'.
 También, arreglé el campo 's_checkinterval' del superbloque, para que muestre justamente una duración de tiempo en vez de una fecha.
 Y por otro lado, puse los rolling test en una carpeta 'test' y agregué unos programas que comparan archivos para testear las salidas de los rolling test y de los códigos fuente (esto ultimo por si por ejemplo fuese necesario comparar archivos entre 2 repos).
+
+[31/12/2021] V5: De ahora en más, de haber nuevos cambios estarán en el repositorio de haruspex: https://github.com/bconstanzo/haruspex/tree/master/haruspex/ext2
